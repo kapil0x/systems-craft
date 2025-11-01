@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metric Journey: End-to-End Transformation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #f0f0f0;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .stage-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stage {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .stage-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .stage-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .stage-title {
+            flex: 1;
+        }
+
+        .stage-title h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .stage-subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .stage-time {
+            background: #27ae60;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .metric-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .metric-box::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .metric-line {
+            margin: 3px 0;
+            line-height: 1.6;
+        }
+
+        .key {
+            color: #3498db;
+        }
+
+        .string {
+            color: #2ecc71;
+        }
+
+        .number {
+            color: #e67e22;
+        }
+
+        .added {
+            color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .arrow-down {
+            text-align: center;
+            font-size: 3em;
+            color: #667eea;
+            margin: 10px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .info-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            margin: 15px 0;
+        }
+
+        .info-panel h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .info-panel ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .highlight-box strong {
+            color: #f39c12;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .comparison-box {
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .comparison-box.before {
+            background: #fff5f5;
+            border: 2px solid #e74c3c;
+        }
+
+        .comparison-box.after {
+            background: #f0fff4;
+            border: 2px solid #27ae60;
+        }
+
+        .comparison-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .comparison-box.before .comparison-title {
+            color: #e74c3c;
+        }
+
+        .comparison-box.after .comparison-title {
+            color: #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 The Journey of a Metric</h1>
+        <p class="subtitle">Watch how a single metric transforms as it flows through the system</p>
+
+        <div class="stage-container">
+            <!-- Stage 1: User Application -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">1</div>
+                    <div class="stage-title">
+                        <h2>User Application</h2>
+                        <div class="stage-subtitle">Python app monitoring CPU usage</div>
+                    </div>
+                    <div class="stage-time">~1ms</div>
+                </div>
+
+                <div class="metric-box" data-label="Python Code">
+<span class="metric-line"><span class="key">import</span> requests</span>
+<span class="metric-line"><span class="key">import</span> time</span>
+<span class="metric-line"></span>
+<span class="metric-line"><span class="comment"># User's application collects CPU usage</span></span>
+<span class="metric-line">cpu_usage = psutil.cpu_percent(interval=<span class="number">1</span>)</span>
+<span class="metric-line"></span>
+<span class="metric-line"><span class="comment"># Create metric object</span></span>
+<span class="metric-line">metric = {</span>
+<span class="metric-line">    <span class="key">"timestamp"</span>: <span class="string">"2025-10-12T15:30:00.000Z"</span>,</span>
+<span class="metric-line">    <span class="key">"name"</span>: <span class="string">"app.cpu.usage"</span>,</span>
+<span class="metric-line">    <span class="key">"value"</span>: <span class="number">75.5</span>,</span>
+<span class="metric-line">    <span class="key">"tags"</span>: {</span>
+<span class="metric-line">        <span class="key">"host"</span>: <span class="string">"web-server-01"</span>,</span>
+<span class="metric-line">        <span class="key">"region"</span>: <span class="string">"us-west-2"</span>,</span>
+<span class="metric-line">        <span class="key">"service"</span>: <span class="string">"api"</span></span>
+<span class="metric-line">    }</span>
+<span class="metric-line">}</span>
+<span class="metric-line"></span>
+<span class="metric-line"><span class="comment"># Send to MetricStream</span></span>
+<span class="metric-line">requests.post(<span class="string">"http://metricstream.com/metrics"</span>,</span>
+<span class="metric-line">              json={<span class="key">"metrics"</span>: [metric]})</span>
+                </div>
+
+                <div class="info-panel">
+                    <h4>📋 What's in the Metric?</h4>
+                    <ul>
+                        <li><strong>timestamp:</strong> When the measurement was taken (ISO 8601 format)</li>
+                        <li><strong>name:</strong> What we're measuring (dot-separated namespace)</li>
+                        <li><strong>value:</strong> The actual measurement (75.5% CPU usage)</li>
+                        <li><strong>tags:</strong> Additional context for filtering/grouping</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- Stage 2: HTTP Request -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">2</div>
+                    <div class="stage-title">
+                        <h2>HTTP Request (Network)</h2>
+                        <div class="stage-subtitle">JSON payload over TCP</div>
+                    </div>
+                    <div class="stage-time">~1ms</div>
+                </div>
+
+                <div class="metric-box" data-label="HTTP Request">
+<span class="metric-line">POST /metrics HTTP/1.1</span>
+<span class="metric-line">Host: metricstream.company.com</span>
+<span class="metric-line">Content-Type: application/json</span>
+<span class="metric-line">Authorization: Bearer user-api-key-abc123</span>
+<span class="metric-line">Content-Length: 234</span>
+<span class="metric-line">Connection: keep-alive</span>
+<span class="metric-line"></span>
+<span class="metric-line">{</span>
+<span class="metric-line">  <span class="key">"metrics"</span>: [</span>
+<span class="metric-line">    {</span>
+<span class="metric-line">      <span class="key">"timestamp"</span>: <span class="string">"2025-10-12T15:30:00.000Z"</span>,</span>
+<span class="metric-line">      <span class="key">"name"</span>: <span class="string">"app.cpu.usage"</span>,</span>
+<span class="metric-line">      <span class="key">"value"</span>: <span class="number">75.5</span>,</span>
+<span class="metric-line">      <span class="key">"tags"</span>: {</span>
+<span class="metric-line">        <span class="key">"host"</span>: <span class="string">"web-server-01"</span>,</span>
+<span class="metric-line">        <span class="key">"region"</span>: <span class="string">"us-west-2"</span>,</span>
+<span class="metric-line">        <span class="key">"service"</span>: <span class="string">"api"</span></span>
+<span class="metric-line">      }</span>
+<span class="metric-line">    }</span>
+<span class="metric-line">  ]</span>
+<span class="metric-line">}</span>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>🔒 Security:</strong> The Authorization header contains the user's API key.
+                    Server validates this before processing the metric.
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- Stage 3: Event Loop + Thread Pool -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">3</div>
+                    <div class="stage-title">
+                        <h2>Event Loop + Thread Pool</h2>
+                        <div class="stage-subtitle">Non-blocking I/O → CPU processing</div>
+                    </div>
+                    <div class="stage-time">~0.1ms</div>
+                </div>
+
+                <div class="metric-box" data-label="In-Memory (C++ Object)">
+<span class="metric-line"><span class="comment">// After JSON parsing:</span></span>
+<span class="metric-line"></span>
+<span class="metric-line">struct Metric {</span>
+<span class="metric-line">    std::string timestamp = <span class="string">"2025-10-12T15:30:00.000Z"</span>;</span>
+<span class="metric-line">    std::string name = <span class="string">"app.cpu.usage"</span>;</span>
+<span class="metric-line">    double value = <span class="number">75.5</span>;</span>
+<span class="metric-line">    std::unordered_map&lt;std::string, std::string&gt; tags = {</span>
+<span class="metric-line">        {<span class="string">"host"</span>, <span class="string">"web-server-01"</span>},</span>
+<span class="metric-line">        {<span class="string">"region"</span>, <span class="string">"us-west-2"</span>},</span>
+<span class="metric-line">        {<span class="string">"service"</span>, <span class="string">"api"</span>}</span>
+<span class="metric-line">    };</span>
+<span class="metric-line">};</span>
+                </div>
+
+                <div class="info-panel">
+                    <h4>⚙️ Processing Steps</h4>
+                    <ul>
+                        <li><strong>epoll_wait():</strong> Event loop detects incoming data (non-blocking)</li>
+                        <li><strong>read():</strong> Read HTTP request from socket</li>
+                        <li><strong>Enqueue:</strong> Pass to thread pool for CPU work</li>
+                        <li><strong>JSON Parser:</strong> Convert string → C++ object (~0.5ms)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- Stage 4: Validation & Enrichment -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">4</div>
+                    <div class="stage-title">
+                        <h2>Validation & Enrichment</h2>
+                        <div class="stage-subtitle">Add server-side metadata</div>
+                    </div>
+                    <div class="stage-time">~1.5ms</div>
+                </div>
+
+                <div class="metric-box" data-label="After Validation & Enrichment">
+<span class="metric-line">{</span>
+<span class="metric-line">  <span class="key">"timestamp"</span>: <span class="string">"2025-10-12T15:30:00.000Z"</span>,</span>
+<span class="metric-line">  <span class="key">"name"</span>: <span class="string">"app.cpu.usage"</span>,</span>
+<span class="metric-line">  <span class="key">"value"</span>: <span class="number">75.5</span>,</span>
+<span class="metric-line">  <span class="key">"tags"</span>: {</span>
+<span class="metric-line">    <span class="key">"host"</span>: <span class="string">"web-server-01"</span>,</span>
+<span class="metric-line">    <span class="key">"region"</span>: <span class="string">"us-west-2"</span>,</span>
+<span class="metric-line">    <span class="key">"service"</span>: <span class="string">"api"</span></span>
+<span class="metric-line">  },</span>
+<span class="metric-line">  <span class="added">"metadata"</span>: {</span>
+<span class="metric-line">    <span class="added">"ingestion_time"</span>: <span class="string">"2025-10-12T15:30:00.123Z"</span>,</span>
+<span class="metric-line">    <span class="added">"client_id"</span>: <span class="string">"user-123"</span>,</span>
+<span class="metric-line">    <span class="added">"datacenter"</span>: <span class="string">"us-west-2"</span>,</span>
+<span class="metric-line">    <span class="added">"server_host"</span>: <span class="string">"ingest-01"</span>,</span>
+<span class="metric-line">    <span class="added">"validated"</span>: <span class="number">true</span></span>
+<span class="metric-line">  }</span>
+<span class="metric-line">}</span>
+                </div>
+
+                <div class="info-panel">
+                    <h4>✅ Validation Checks</h4>
+                    <ul>
+                        <li><strong>Auth:</strong> API key valid? → Extract client_id</li>
+                        <li><strong>Rate limit:</strong> Within quota? (100K metrics/hour)</li>
+                        <li><strong>Timestamp:</strong> Valid ISO 8601 format?</li>
+                        <li><strong>Name:</strong> Matches pattern <code>^[a-zA-Z0-9._]+$</code>?</li>
+                        <li><strong>Value:</strong> Numeric? Within range [-1e15, 1e15]?</li>
+                    </ul>
+                </div>
+
+                <div class="comparison">
+                    <div class="comparison-box before">
+                        <div class="comparison-title">❌ Invalid Metrics (Rejected)</div>
+                        <div style="font-family: monospace; font-size: 0.9em; line-height: 1.8;">
+                            • timestamp: "" → 400 Bad Request<br>
+                            • name: "invalid name!" → 400<br>
+                            • value: "not a number" → 400<br>
+                            • Exceeded quota → 429 Too Many
+                        </div>
+                    </div>
+                    <div class="comparison-box after">
+                        <div class="comparison-title">✅ Valid Metric (Accepted)</div>
+                        <div style="font-family: monospace; font-size: 0.9em; line-height: 1.8;">
+                            • All fields present ✓<br>
+                            • Valid formats ✓<br>
+                            • Within rate limit ✓<br>
+                            • Ready for storage ✓
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- Stage 5: Kafka Producer -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">5</div>
+                    <div class="stage-title">
+                        <h2>Kafka Producer</h2>
+                        <div class="stage-subtitle">Message queue for distributed processing</div>
+                    </div>
+                    <div class="stage-time">~0.5ms</div>
+                </div>
+
+                <div class="metric-box" data-label="Kafka Message">
+<span class="metric-line"><span class="comment">// Topic: metrics.ingest</span></span>
+<span class="metric-line"><span class="comment">// Partition: hash(client_id) % 10 = 3</span></span>
+<span class="metric-line"><span class="comment">// Offset: 123456789</span></span>
+<span class="metric-line"></span>
+<span class="metric-line">{</span>
+<span class="metric-line">  <span class="key">"timestamp"</span>: <span class="string">"2025-10-12T15:30:00.000Z"</span>,</span>
+<span class="metric-line">  <span class="key">"name"</span>: <span class="string">"app.cpu.usage"</span>,</span>
+<span class="metric-line">  <span class="key">"value"</span>: <span class="number">75.5</span>,</span>
+<span class="metric-line">  <span class="key">"tags"</span>: {</span>
+<span class="metric-line">    <span class="key">"host"</span>: <span class="string">"web-server-01"</span>,</span>
+<span class="metric-line">    <span class="key">"region"</span>: <span class="string">"us-west-2"</span>,</span>
+<span class="metric-line">    <span class="key">"service"</span>: <span class="string">"api"</span></span>
+<span class="metric-line">  },</span>
+<span class="metric-line">  <span class="key">"metadata"</span>: {</span>
+<span class="metric-line">    <span class="key">"ingestion_time"</span>: <span class="string">"2025-10-12T15:30:00.123Z"</span>,</span>
+<span class="metric-line">    <span class="key">"client_id"</span>: <span class="string">"user-123"</span>,</span>
+<span class="metric-line">    <span class="key">"datacenter"</span>: <span class="string">"us-west-2"</span>,</span>
+<span class="metric-line">    <span class="key">"server_host"</span>: <span class="string">"ingest-01"</span>,</span>
+<span class="metric-line">    <span class="key">"validated"</span>: <span class="number">true</span></span>
+<span class="metric-line">  }</span>
+<span class="metric-line">}</span>
+                </div>
+
+                <div class="info-panel">
+                    <h4>📨 Why Kafka?</h4>
+                    <ul>
+                        <li><strong>Durability:</strong> Metrics persisted to disk (7-day retention)</li>
+                        <li><strong>Decoupling:</strong> Ingestion continues even if storage is down</li>
+                        <li><strong>Scalability:</strong> 10 partitions = 10 parallel consumers</li>
+                        <li><strong>Replay:</strong> Can reprocess metrics if needed</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>⚡ Async Operation:</strong> HTTP response sent BEFORE Kafka confirms write.
+                    If Kafka fails, metric goes to in-memory buffer + local disk failover.
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- Stage 6: ClickHouse Storage -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">6</div>
+                    <div class="stage-title">
+                        <h2>ClickHouse Storage</h2>
+                        <div class="stage-subtitle">Columnar database for fast queries</div>
+                    </div>
+                    <div class="stage-time">~50ms</div>
+                </div>
+
+                <div class="metric-box" data-label="ClickHouse Row">
+<span class="metric-line"><span class="comment">-- Table: metrics</span></span>
+<span class="metric-line"><span class="comment">-- Partition: 202510 (YYYYMM)</span></span>
+<span class="metric-line"><span class="comment">-- Sorted by: (name, timestamp)</span></span>
+<span class="metric-line"></span>
+<span class="metric-line">INSERT INTO metrics VALUES (</span>
+<span class="metric-line">  <span class="string">'2025-10-12 15:30:00.000'</span>,  <span class="comment">-- timestamp (DateTime64)</span></span>
+<span class="metric-line">  <span class="string">'app.cpu.usage'</span>,            <span class="comment">-- name (String)</span></span>
+<span class="metric-line">  <span class="number">75.5</span>,                          <span class="comment">-- value (Float64)</span></span>
+<span class="metric-line">  {                              <span class="comment">-- tags (Map)</span></span>
+<span class="metric-line">    <span class="string">'host'</span>: <span class="string">'web-server-01'</span>,</span>
+<span class="metric-line">    <span class="string">'region'</span>: <span class="string">'us-west-2'</span>,</span>
+<span class="metric-line">    <span class="string">'service'</span>: <span class="string">'api'</span></span>
+<span class="metric-line">  },</span>
+<span class="metric-line">  <span class="string">'user-123'</span>,                  <span class="comment">-- client_id (String)</span></span>
+<span class="metric-line">  <span class="string">'2025-10-12 15:30:00.123'</span>   <span class="comment">-- ingestion_time (DateTime64)</span></span>
+<span class="metric-line">);</span>
+                </div>
+
+                <div class="info-panel">
+                    <h4>💾 Storage Benefits</h4>
+                    <ul>
+                        <li><strong>Columnar:</strong> Only read columns you need (fast aggregations)</li>
+                        <li><strong>Partitioned:</strong> By month, old data can be archived</li>
+                        <li><strong>Sorted:</strong> Time-series queries are blazing fast</li>
+                        <li><strong>Compressed:</strong> 10x compression ratio typical</li>
+                    </ul>
+                </div>
+
+                <div class="comparison">
+                    <div class="comparison-box before">
+                        <div class="comparison-title">Before (File Storage)</div>
+                        <div style="font-size: 0.9em; line-height: 1.8;">
+                            • Single file (metrics.jsonl)<br>
+                            • No indexing → slow queries<br>
+                            • Must scan entire file<br>
+                            • Limited to single server
+                        </div>
+                    </div>
+                    <div class="comparison-box after">
+                        <div class="comparison-title">After (ClickHouse)</div>
+                        <div style="font-size: 0.9em; line-height: 1.8;">
+                            • Distributed across nodes<br>
+                            • Indexed by name + time<br>
+                            • Queries in milliseconds<br>
+                            • Scales horizontally
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- Stage 7: Query & Aggregation -->
+            <div class="stage">
+                <div class="stage-header">
+                    <div class="stage-number">7</div>
+                    <div class="stage-title">
+                        <h2>Query & Aggregation</h2>
+                        <div class="stage-subtitle">User retrieves their data</div>
+                    </div>
+                    <div class="stage-time">~100ms</div>
+                </div>
+
+                <div class="metric-box" data-label="Query API Request">
+<span class="metric-line">GET /api/query?</span>
+<span class="metric-line">  name=app.cpu.usage&</span>
+<span class="metric-line">  start=2025-10-12T15:00:00Z&</span>
+<span class="metric-line">  end=2025-10-12T16:00:00Z&</span>
+<span class="metric-line">  interval=1m&</span>
+<span class="metric-line">  aggregation=avg</span>
+                </div>
+
+                <div class="metric-box" data-label="ClickHouse Query">
+<span class="metric-line">SELECT</span>
+<span class="metric-line">  toStartOfMinute(timestamp) as time_bucket,</span>
+<span class="metric-line">  avg(value) as avg_cpu,</span>
+<span class="metric-line">  max(value) as max_cpu,</span>
+<span class="metric-line">  min(value) as min_cpu,</span>
+<span class="metric-line">  count(*) as samples</span>
+<span class="metric-line">FROM metrics</span>
+<span class="metric-line">WHERE</span>
+<span class="metric-line">  name = <span class="string">'app.cpu.usage'</span></span>
+<span class="metric-line">  AND timestamp BETWEEN <span class="string">'2025-10-12 15:00:00'</span></span>
+<span class="metric-line">                    AND <span class="string">'2025-10-12 16:00:00'</span></span>
+<span class="metric-line">  AND client_id = <span class="string">'user-123'</span></span>
+<span class="metric-line">GROUP BY time_bucket</span>
+<span class="metric-line">ORDER BY time_bucket;</span>
+                </div>
+
+                <div class="metric-box" data-label="API Response">
+<span class="metric-line">{</span>
+<span class="metric-line">  <span class="key">"query"</span>: {</span>
+<span class="metric-line">    <span class="key">"name"</span>: <span class="string">"app.cpu.usage"</span>,</span>
+<span class="metric-line">    <span class="key">"start"</span>: <span class="string">"2025-10-12T15:00:00Z"</span>,</span>
+<span class="metric-line">    <span class="key">"end"</span>: <span class="string">"2025-10-12T16:00:00Z"</span>,</span>
+<span class="metric-line">    <span class="key">"interval"</span>: <span class="string">"1m"</span></span>
+<span class="metric-line">  },</span>
+<span class="metric-line">  <span class="key">"data"</span>: [</span>
+<span class="metric-line">    {</span>
+<span class="metric-line">      <span class="key">"time"</span>: <span class="string">"2025-10-12T15:30:00Z"</span>,</span>
+<span class="metric-line">      <span class="key">"avg"</span>: <span class="number">75.5</span>,</span>
+<span class="metric-line">      <span class="key">"max"</span>: <span class="number">85.2</span>,</span>
+<span class="metric-line">      <span class="key">"min"</span>: <span class="number">68.3</span>,</span>
+<span class="metric-line">      <span class="key">"samples"</span>: <span class="number">12</span></span>
+<span class="metric-line">    },</span>
+<span class="metric-line">    <span class="comment">// ... more time buckets ...</span></span>
+<span class="metric-line">  ]</span>
+<span class="metric-line">}</span>
+                </div>
+
+                <div class="info-panel">
+                    <h4>📊 Query Performance</h4>
+                    <ul>
+                        <li><strong>1 hour of data:</strong> ~50-100ms</li>
+                        <li><strong>1 day of data:</strong> ~200-500ms</li>
+                        <li><strong>1 month of data:</strong> ~1-2 seconds</li>
+                        <li><strong>Aggregations:</strong> avg, max, min, sum, count, percentiles</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="stage" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h2 style="color: white; margin-bottom: 20px; text-align: center;">🎯 Journey Summary</h2>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 2em; font-weight: bold;">~5ms</div>
+                        <div style="opacity: 0.9;">User-facing latency</div>
+                        <div style="font-size: 0.85em; opacity: 0.7; margin-top: 5px;">(Steps 1-5)</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 2em; font-weight: bold;">~60ms</div>
+                        <div style="opacity: 0.9;">End-to-end latency</div>
+                        <div style="font-size: 0.85em; opacity: 0.7; margin-top: 5px;">(Until queryable)</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 2em; font-weight: bold;">145K</div>
+                        <div style="opacity: 0.9;">RPS per server</div>
+                        <div style="font-size: 0.85em; opacity: 0.7; margin-top: 5px;">(Phase 8)</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 2em; font-weight: bold;">100%</div>
+                        <div style="opacity: 0.9;">Success rate</div>
+                        <div style="font-size: 0.85em; opacity: 0.7; margin-top: 5px;">(@ 1000 clients)</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <h3 style="color: white; margin-bottom: 15px;">🚀 Scaling Beyond One Server</h3>
+                    <div style="line-height: 1.8;">
+                        <strong>Horizontal Scaling:</strong> Deploy multiple ingestion servers behind load balancer<br>
+                        <strong>Kafka Partitions:</strong> Scale to 100+ partitions for parallel processing<br>
+                        <strong>ClickHouse Sharding:</strong> Distribute data across multiple nodes<br>
+                        <strong>Target:</strong> 500K+ RPS per datacenter
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

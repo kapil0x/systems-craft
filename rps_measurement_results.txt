@@ -1,0 +1,25 @@
+TEST 1 - Baseline (10 clients, 100 req/client)
+  Success Rate: 
+  Avg Latency: 
+  RPS: 0.00
+
+TEST 2 - Medium Load (50 clients, 100 req/client)
+  Success Rate: 
+  Avg Latency: 
+  RPS: 0.00
+
+TEST 3 - High Load (100 clients, 100 req/client)
+  Success Rate: 
+  Avg Latency: 
+  RPS: 0.00
+
+TEST 4 - Very High Load (200 clients, 50 req/client)
+  Success Rate: 
+  Avg Latency: 
+  RPS: 0.00
+
+TEST 5 - Extreme Load (500 clients, 20 req/client)
+  Success Rate: 
+  Avg Latency: 
+  RPS: 0.00
+

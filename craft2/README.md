@@ -1,141 +1,106 @@
 # Craft #2: Distributed Message Queue
 
-**Status:** 🔜 Coming Soon
+**Component:** Kafka-like message queue with partitioning, consumer groups, and coordination
+**Learning Goal:** Build a message queue from first principles, then understand why distributed systems need consensus
+**Total Time:** 8-12 hours across 3 phases
+**Target Performance:** 1M+ messages/sec, horizontal scaling, automatic failover
 
-**Goal:** Build a distributed message queue (like Kafka or Pulsar) that buffers metrics between ingestion and storage.
+---
 
-## What You'll Build
+## Overview
 
-A production-grade message queue with:
-- **Partitioning** for parallel processing and scalability
-- **Write-ahead log (WAL)** for durability
-- **Consumer groups** for load distribution
-- **Offset management** for reliable consumption
-- **Replication** with leader election (Raft consensus)
+Craft #2 teaches you how to build a production-grade message queue through **progressive abstraction**. You'll start with file-based partitioning (single machine), add multi-process coordination, then finally implement distributed consensus across machines.
 
-## Systems Design Focus
+**Key Learning:** Understand partitioning, offsets, consumer groups, and rebalancing before using Kafka in production.
 
-- Partitioning trade-offs: parallelism vs ordering guarantees
-- Message ordering: per-partition vs global ordering
-- Delivery semantics: at-least-once vs exactly-once
-- Leader election: Raft consensus protocol
-- Consumer coordination: group membership and rebalancing
+---
 
-## Target Performance
+## Architecture Evolution
 
-- **Throughput:** 1M+ messages/sec
-- **Latency:** <10ms p99
-- **Scalability:** Horizontal scaling with partitions
-- **Durability:** Survive broker failures with replication
-
-## Service API Contract
-
-See [API.md](API.md) for the complete API specification.
-
-**Producer API:**
+### Starting Point (Craft #1)
 ```
-POST /produce
-Body: {"topic": "metrics.inbound", "key": "client_123", "value": {...}}
-Response: {"partition": 3, "offset": 12847}
+Ingestion Service → writes directly to metrics.jsonl file
 ```
+- **Problem:** Tight coupling between ingestion and storage
+- **Limitation:** Can't scale processing independently
 
-**Consumer API:**
+### Phase 1: Partitioned Queue
 ```
-GET /consume?partition=3&offset=12847&count=100
-Response: {"messages": [...], "next_offset": 12947}
+Ingestion → [Partitioned Queue] → Consumer
+              partition-0/
+              partition-1/          (file-based, single machine)
+              partition-2/
+              partition-3/
 ```
+- **Benefit:** Decoupled ingestion from processing
+- **Limitation:** Single consumer, no fault tolerance
 
-**Consumer Group API:**
+### Phase 2: Consumer Groups
 ```
-POST /subscribe
-Body: {"group": "storage-workers", "topics": ["metrics.inbound"]}
-Response: {"assigned_partitions": [3, 7, 11]}
+Ingestion → [Queue] → Consumer Group
+                       ├─ Consumer A (P0, P2)
+                       └─ Consumer B (P1, P3)
 ```
+- **Benefit:** Parallel processing, automatic rebalancing
+- **Limitation:** Single machine only (file-based coordination)
 
-## Architecture Overview
-
+### Phase 3: Distributed Coordination
 ```
-Producers (Craft #1: Ingestion)
-    ↓
-┌──────────────────────────────────────┐
-│  Message Queue Cluster (3 brokers)  │
-│                                      │
-│  Topic: metrics.inbound             │
-│  ├─ Partition 0 (Leader: B1, R: B2) │
-│  ├─ Partition 1 (Leader: B2, R: B3) │
-│  └─ Partition 2 (Leader: B3, R: B1) │
-└──────────────────────────────────────┘
-    ↓
-Consumer Groups (Craft #3: Storage)
+Ingestion → [Queue] → Consumer Group (multi-machine)
+   │           │       ├─ Consumer A @ node-1
+   │           │       ├─ Consumer B @ node-2
+   │           │       └─ Consumer C @ node-3
+   │           │
+   │           └─── ZooKeeper (coordination)
+   │
+   └─────────────── Multiple brokers with replication
 ```
+- **Benefit:** Network-wide coordination, true fault tolerance
+- **Scalability:** Horizontal scaling across data centers
 
-## Implementation Plan
+---
 
-### Phase 1: Single-Node Queue
-- In-memory queue with persistence
-- Write-ahead log (append-only file)
-- Produce and consume APIs
+## Phase Breakdown
 
-### Phase 2: Partitioning
-- Multiple partitions for parallelism
-- Key-based routing (hash partitioning)
-- Independent offset tracking per partition
+### Phase 1: File-Based Partitioned Queue 📝
 
-### Phase 3: Consumer Groups
-- Group membership management
-- Partition assignment and rebalancing
-- Offset commit and tracking
+**Documentation:** [phase-1-partitioned-queue/design.md](phase-1-partitioned-queue/design.md)
 
-### Phase 4: Replication
-- Leader-follower replication per partition
-- Raft consensus for leader election
-- Automatic failover on broker failure
+**Goal:** Understand message queue fundamentals - partitioning, offsets, producer/consumer patterns
 
-### Phase 5: Optimization
-- Batch writes to WAL
-- Zero-copy message transfer
-- Compression support
+**Time:** 3-4 hours
+**Status:** 📝 Design complete, implementation pending
 
-## Key Learnings
+---
 
-- **Partitioning enables parallelism** but requires careful key design
-- **Ordering guarantees** are per-partition, not global
-- **Replication** trades write latency for durability
-- **Consumer groups** enable horizontal scaling of consumers
-- **WAL** is the foundation of durability in distributed systems
+### Phase 2: Consumer Coordination 📝
 
-## Prerequisites
+**Documentation:** [phase-2-consumer-coordination/design.md](phase-2-consumer-coordination/design.md)
 
-- Complete [Craft #1: Metrics Ingestion](../src/)
-- Understand producer-consumer patterns from [Craft #0](../phase0/)
-- Familiarity with consensus algorithms (Raft) helpful but not required
+**Goal:** Understand consumer groups, rebalancing, and failure detection
 
-## Next Steps
+**Time:** 3-4 hours
+**Status:** 📝 Design complete, implementation pending
 
-1. **[→ Read API Specification](API.md)**
-2. **[→ Review Design Decisions](DESIGN.md)**
-3. **[→ Start Implementation Guide](TUTORIAL.md)** (Coming soon)
+---
 
-## Service Decomposition for AI Agents
+### Phase 3: Distributed Coordination 📝
 
-This craft can be built by 3 parallel agents:
+**Documentation:** *(to be created)*
 
-**Agent 1: WAL & Persistence**
-- Implement write-ahead log
-- Partition storage management
-- Offset indexing
+**Goal:** Scale beyond single machine using ZooKeeper/Raft for distributed consensus
 
-**Agent 2: Network & APIs**
-- HTTP server for produce/consume
-- Request routing to partitions
-- Client connection management
+**Time:** 4-5 hours
+**Status:** 📝 Planned
 
-**Agent 3: Coordination**
-- Consumer group management
-- Partition assignment algorithm
-- Offset commit tracking
+---
 
-**Integration point:** All agents implement interfaces defined in `API.md` and `DESIGN.md`.
+## Related Documentation
+
+- **[Phases to Crafts Mapping](../docs/PHASES_TO_CRAFTS_MAPPING.md)** - Full Craft #2 details
+- **[Phase 1 Design](phase-1-partitioned-queue/design.md)** - File-based queue architecture
+- **[Phase 2 Design](phase-2-consumer-coordination/design.md)** - Consumer group coordination
+- **[Craft #1 README](../craft1/README.md)** - Ingestion service (producer)
 
 ---
 

@@ -1,0 +1,144 @@
+=== MetricStream Performance Analysis ===
+Phase 1: Performance Profiling & Bottleneck Analysis
+Target: Reproduce 99.25% → 91.4% success rate degradation
+
+✅ MetricStream server detected
+
+🧪 Testing: Target 100 RPS (10 clients, 100ms interval)
+   Expected: 1000 total requests
+📊 System state before test:
+   CPU: 5.67
+   Memory: 15G
+   Open files:        9
+⏱️  Starting load test...
+   ✅ Success Rate: 8.20%
+   ⏱️  Avg Latency: 0.95 ms
+   📈 Requests: 82/1000 successful
+   ⚠️  PERFORMANCE DEGRADATION DETECTED!
+   🔍 Success rate below 95% - bottleneck identified
+   💤 Cooling down (5s)...
+
+🧪 Testing: Target 500 RPS (25 clients, 20ms interval)
+   Expected: 2500 total requests
+📊 System state before test:
+   CPU: 15.83
+   Memory: 15G
+lsof: no process ID specified
+lsof 4.91
+ latest revision: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
+ latest FAQ: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/FAQ
+ latest man page: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_man
+ usage: [-?abhlnNoOPRtUvVX] [+|-c c] [+|-d s] [+D D] [+|-f[cgG]]
+ [-F [f]] [-g [s]] [-i [i]] [+|-L [l]] [+|-M] [-o [o]] [-p s]
+ [+|-r [t]] [-s [p:s]] [-S [t]] [-T [t]] [-u s] [+|-w] [-x [fl]] [--] [names]
+Use the ``-h'' option to get more help information.
+   Open files:        0
+⏱️  Starting load test...
+   ✅ Success Rate: 0.00%
+   ⏱️  Avg Latency: 0.02 ms
+   📈 Requests: 0/2500 successful
+   ⚠️  PERFORMANCE DEGRADATION DETECTED!
+   🔍 Success rate below 95% - bottleneck identified
+   💤 Cooling down (5s)...
+
+🧪 Testing: Target 1000 RPS (50 clients, 10ms interval)
+   Expected: 5000 total requests
+📊 System state before test:
+   CPU: 3.94
+   Memory: 15G
+lsof: no process ID specified
+lsof 4.91
+ latest revision: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
+ latest FAQ: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/FAQ
+ latest man page: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_man
+ usage: [-?abhlnNoOPRtUvVX] [+|-c c] [+|-d s] [+D D] [+|-f[cgG]]
+ [-F [f]] [-g [s]] [-i [i]] [+|-L [l]] [+|-M] [-o [o]] [-p s]
+ [+|-r [t]] [-s [p:s]] [-S [t]] [-T [t]] [-u s] [+|-w] [-x [fl]] [--] [names]
+Use the ``-h'' option to get more help information.
+   Open files:        0
+⏱️  Starting load test...
+   ✅ Success Rate: 0.00%
+   ⏱️  Avg Latency: 0.03 ms
+   📈 Requests: 0/5000 successful
+   ⚠️  PERFORMANCE DEGRADATION DETECTED!
+   🔍 Success rate below 95% - bottleneck identified
+   💤 Cooling down (5s)...
+
+🧪 Testing: Target 2000 RPS (100 clients, 5ms interval)
+   Expected: 10000 total requests
+📊 System state before test:
+   CPU: 5.98
+   Memory: 15G
+lsof: no process ID specified
+lsof 4.91
+ latest revision: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
+ latest FAQ: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/FAQ
+ latest man page: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_man
+ usage: [-?abhlnNoOPRtUvVX] [+|-c c] [+|-d s] [+D D] [+|-f[cgG]]
+ [-F [f]] [-g [s]] [-i [i]] [+|-L [l]] [+|-M] [-o [o]] [-p s]
+ [+|-r [t]] [-s [p:s]] [-S [t]] [-T [t]] [-u s] [+|-w] [-x [fl]] [--] [names]
+Use the ``-h'' option to get more help information.
+   Open files:        0
+⏱️  Starting load test...
+   ✅ Success Rate: 0.00%
+   ⏱️  Avg Latency: 0.02 ms
+   📈 Requests: 0/10000 successful
+   ⚠️  PERFORMANCE DEGRADATION DETECTED!
+   🔍 Success rate below 95% - bottleneck identified
+   💤 Cooling down (5s)...
+
+🧪 Testing: Target 2500 RPS (125 clients, 4ms interval)
+   Expected: 12500 total requests
+📊 System state before test:
+   CPU: 7.26
+   Memory: 15G
+lsof: no process ID specified
+lsof 4.91
+ latest revision: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
+ latest FAQ: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/FAQ
+ latest man page: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_man
+ usage: [-?abhlnNoOPRtUvVX] [+|-c c] [+|-d s] [+D D] [+|-f[cgG]]
+ [-F [f]] [-g [s]] [-i [i]] [+|-L [l]] [+|-M] [-o [o]] [-p s]
+ [+|-r [t]] [-s [p:s]] [-S [t]] [-T [t]] [-u s] [+|-w] [-x [fl]] [--] [names]
+Use the ``-h'' option to get more help information.
+   Open files:        0
+⏱️  Starting load test...
+   ✅ Success Rate: 0.00%
+   ⏱️  Avg Latency: 0.00 ms
+   📈 Requests: 0/12500 successful
+   ⚠️  PERFORMANCE DEGRADATION DETECTED!
+   🔍 Success rate below 95% - bottleneck identified
+   💤 Cooling down (5s)...
+
+=== Performance Analysis Complete ===
+📄 Results saved to: performance_results.txt
+
+📊 Performance Summary:
+Timestamp            RPS_Target  Total_Requests  Successful  Failed  Success_Rate  Avg_Latency
+2025-10-03 18:42:15  100         1000            82          1/15
+2/15
+3/15
+4/15
+5/15
+6/15
+7/15
+8/15
+9/15
+10/15
+11/15
+918                  8.20        0.95
+2025-10-03 18:42:24  500         2500            0           1/7
+2/7
+2500                 0.00        0.02
+2025-10-03 18:42:31  1000        5000            0           1/6
+5000                 0.00        0.03
+2025-10-03 18:42:38  2000        10000           0           10000   0.00          0.02
+2025-10-03 18:42:45  2500        12500           0           12500   0.00          0.00
+
+🔬 Next Steps for Principal Engineer Analysis:
+1. Run: perf record -g ./metricstream_server
+2. Run: valgrind --tool=callgrind ./metricstream_server
+3. Analyze: perf report to identify CPU hotspots
+4. Check: strace -c -p $(pgrep metricstream_server) for syscall analysis
+
+💡 Hypothesis: File I/O mutex contention becomes bottleneck above 1000 RPS

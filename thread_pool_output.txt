@@ -1,0 +1,5 @@
+Starting MetricStream server on port 8080
+[ThreadPool] Started with 16 workers, max queue size: 10000
+HTTP server started on port 8080
+Ingestion service started
+[PROFILE] Wait: 1μs | Cleanup: 0μs (0 items) | Decision: 4μs | Total-in-lock: 6μs | Queue-size: 1

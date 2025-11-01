@@ -88,6 +88,8 @@ Every optimization is driven by measurement:
 
 ## 📚 Current Status
 
+> **Understanding Crafts & Phases:** Each **Craft** is a complete system component. Each craft is built through multiple **Phases** (optimization or implementation steps). Each craft starts with Phase 1 for clarity. See [Phases to Crafts Mapping](docs/PHASES_TO_CRAFTS_MAPPING.md) for details.
+
 ### ✅ Craft #0: Complete PoC (Available)
 **Location:** [`phase0/`](phase0/)
 
@@ -102,29 +104,31 @@ All 5 components in 600 lines:
 **Time:** 2-3 hours
 
 ### ✅ Craft #1: Metrics Ingestion (Available)
-**Location:** [`src/`](src/)
+**Location:** [`src/`](src/) | **Documentation:** [`craft1/README.md`](craft1/README.md)
 
-Optimized through 7 phases:
-- Thread pool for concurrent requests
-- Sliding window rate limiting
-- Custom JSON parser (O(n))
-- Async file I/O with producer-consumer
-- Lock-free ring buffers
-- HTTP Keep-Alive optimization
+Optimized through **8 phases**:
+- **Phase 1:** Threading per request → 88% success @ 20 clients
+- **Phase 2:** Async I/O (producer-consumer) → 66% success @ 50 clients
+- **Phase 3:** JSON parsing optimization → 80% success, 2.73ms latency
+- **Phase 4:** Per-client mutex pools → incremental improvement
+- **Phase 5:** Thread pool architecture → 100% success, 0.65ms latency
+- **Phase 6:** Lock-free ring buffers → eliminated overhead
+- **Phase 7:** HTTP Keep-Alive → **2,253 RPS, 0.25ms latency** ✅
+- **Phase 8:** Event-driven I/O (epoll/kqueue) → 🚧 in progress
 
-**Performance:** 2,253 RPS sustained, 100% reliability, p50 = 0.25ms
-**Time:** 8-12 hours
+**Current Performance (Phase 7):** 2,253 RPS sustained, 100% reliability, p50 = 0.25ms
+**Time:** 8-12 hours total across all phases
 
 ### 🔜 Craft #2: Distributed Message Queue (Coming Soon)
-**Location:** [`craft2/`](craft2/)
+**Location:** [`craft2/`](craft2/) | **Documentation:** [`craft2/README.md`](craft2/README.md)
 
-Kafka-like distributed queue:
-- Partitioning for parallelism
-- Write-ahead log for durability
-- Consumer groups
-- Replication with leader election
+Kafka-like distributed queue through **3 phases**:
+- **Phase 1:** File-based partitioned queue → 📝 Designed
+- **Phase 2:** Consumer coordination (groups, rebalancing) → 📝 Designed
+- **Phase 3:** Distributed coordination (ZooKeeper/Raft) → 📝 Planned
 
 **Target:** 1M+ messages/sec, horizontal scaling
+**Time:** 8-12 hours total across all phases
 
 ### 🔜 Craft #3: Time-Series Storage Engine (Coming Soon)
 **Location:** [`craft3/`](craft3/)

@@ -1,0 +1,89 @@
+{
+  "name": "MetricStream C++ Development (YOLO Mode)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:America/Los_Angeles}",
+      "CLAUDE_CODE_VERSION": "latest",
+      "GIT_DELTA_VERSION": "0.18.2"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+        "files.trimTrailingWhitespace": true,
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        },
+        "C_Cpp.default.cppStandard": "c++17",
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+        "claude.approvedCommands": [
+          "cmake:*",
+          "make:*",
+          "./metricstream_server",
+          "./build/metricstream_server",
+          "./test_client",
+          "./build/load_test:*",
+          "./load_test:*",
+          "./performance_test.sh:*",
+          "git add:*",
+          "git commit:*",
+          "git push:*",
+          "git checkout:*",
+          "git log:*",
+          "git stash:*",
+          "chmod:*",
+          "pkill:*",
+          "curl:*",
+          "tree:*",
+          "g++:*",
+          "python3:*",
+          "gh pr create:*",
+          "gh issue create:*",
+          "mkdir:*",
+          "ls:*",
+          "cat:*",
+          "grep:*",
+          "find:*"
+        ]
+      }
+    }
+  },
+  "remoteUser": "developer",
+  "mounts": [
+    "source=metricstream-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=metricstream-claude-config-${devcontainerId},target=/home/developer/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/developer/.claude",
+    "WORKSPACE_DIR": "/workspace"
+  },
+  "postCreateCommand": "git config --global --add safe.directory /workspace",
+  "features": {},
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "MetricStream Server",
+      "onAutoForward": "notify"
+    }
+  }
+}

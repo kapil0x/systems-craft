@@ -1,0 +1,6 @@
+Test file after removing old branch protection rules.
+
+This PR tests if we can now merge without approval.
+
+Created at: 2025-10-13
+Test: After removing old branch protection
