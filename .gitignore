@@ -40,3 +40,6 @@ LINKEDIN_POSTS.md
 
 # Conversation notes and discussion files
 conversation/
+
+# Git worktrees (development branches)
+.worktrees/

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-email {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .craft-progress {
+            margin-bottom: 30px;
+        }
+
+        .craft-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .craft-status {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.partial {
+            background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .progress-fill.planned {
+            background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .achievements {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .achievement {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff3cd 0%, #fcf8e3 100%);
+            border-radius: 10px;
+            border: 2px solid #f39c12;
+        }
+
+        .achievement-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #7d6608;
+        }
+
+        .leaderboard {
+            margin-top: 40px;
+        }
+
+        .leaderboard h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .leaderboard-table th {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .leaderboard-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #555;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .leaderboard-table tr.you {
+            background: linear-gradient(135deg, #d5f4e6 0%, #e8f5e9 100%);
+            font-weight: 600;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .rank.gold {
+            color: #f39c12;
+        }
+
+        .rank.silver {
+            color: #95a5a6;
+        }
+
+        .rank.bronze {
+            color: #cd7f32;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-info {
+                text-align: center;
+                margin-top: 15px;
+            }
+
+            .achievements {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Systems Craft</a>
+
+        <header>
+            <div>
+                <h1>📊 My Progress</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-email" id="userEmail">Loading...</div>
+                <button class="logout-btn" onclick="logoutUser()">Sign Out</button>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <!-- Crafts Progress -->
+            <div class="card">
+                <h2>🚀 Learning Journey</h2>
+                
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #0: Complete PoC</span>
+                        <span class="craft-status" id="craft0-status">Not Started</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="craft0-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #1: Metrics Ingestion</span>
+                        <span class="craft-status" id="craft1-status">Not Started</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="craft1-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #2: Message Queue</span>
+                        <span class="craft-status" id="craft2-status">Not Started</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="craft2-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #3: Storage Engine</span>
+                        <span class="craft-status" id="craft3-status">Coming Soon</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill planned" id="craft3-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #4: Query Engine</span>
+                        <span class="craft-status" id="craft4-status">Coming Soon</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill planned" id="craft4-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #5: Alerting System</span>
+                        <span class="craft-status" id="craft5-status">Coming Soon</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill planned" id="craft5-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="craft0.html" class="btn btn-primary">Continue Craft #0</a>
+                    <a href="craft1.html" class="btn btn-secondary">Continue Craft #1</a>
+                </div>
+            </div>
+
+            <!-- Statistics & Achievements -->
+            <div class="card">
+                <h2>🏆 Your Stats</h2>
+
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">Total Time Spent</div>
+                        <div class="stat-value" id="totalTime">0h</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Crafts Completed</div>
+                        <div class="stat-value" id="craftsCompleted">0/6</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Best Performance</div>
+                        <div class="stat-value" id="bestPerformance">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Current Rank</div>
+                        <div class="stat-value" id="currentRank">#—</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 25px; margin-bottom: 15px; color: #2c3e50;">Achievements</h3>
+                <div class="achievements">
+                    <div class="achievement">
+                        <div class="achievement-icon">🎓</div>
+                        <div class="achievement-name">PoC Builder</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">⚡</div>
+                        <div class="achievement-name">Optimization Pro</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">📤</div>
+                        <div class="achievement-name">Queue Master</div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d;">
+                    Earn achievements by completing crafts and submitting code!
+                </p>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="card leaderboard">
+            <h2>🥇 Leaderboard (Top Performers)</h2>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Crafts Completed</th>
+                        <th>Best RPS</th>
+                        <th>Time to Completion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rank gold">🥇 1</td>
+                        <td>Alex Chen</td>
+                        <td>✅ 2/6</td>
+                        <td>~2k RPS</td>
+                        <td>32 hours</td>
+                    </tr>
+                    <tr>
+                        <td class="rank silver">🥈 2</td>
+                        <td>Jordan Williams</td>
+                        <td>✅ 1/6</td>
+                        <td>~1.8k RPS</td>
+                        <td>28 hours</td>
+                    </tr>
+                    <tr>
+                        <td class="rank bronze">🥉 3</td>
+                        <td>Sam Patel</td>
+                        <td>✅ 1/6</td>
+                        <td>~1.5k RPS</td>
+                        <td>35 hours</td>
+                    </tr>
+                    <tr class="you">
+                        <td class="rank">📍 —</td>
+                        <td>You (Not Yet Ranked)</td>
+                        <td>0/6</td>
+                        <td>—</td>
+                        <td>Start learning!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 15px; color: #2c3e50;">Ready to start building?</h3>
+            <a href="craft0.html" class="btn btn-primary" style="margin-right: 15px;">Start Craft #0</a>
+            <a href="index.html" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "systems-craft.firebaseapp.com",
+            projectId: "systems-craft",
+            storageBucket: "systems-craft.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Check authentication status
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log("User logged in:", user.email);
+                document.getElementById('userEmail').textContent = user.email;
+                
+                // Load user progress from Firestore
+                const docRef = db.collection('users').doc(user.uid);
+                const docSnap = await docRef.get();
+                
+                if (docSnap.exists) {
+                    const data = docSnap.data();
+                    loadProgress(data);
+                } else {
+                    // Create new user document
+                    await docRef.set({
+                        email: user.email,
+                        crafts: {
+                            craft0: { completed: false, phases: [] },
+                            craft1: { completed: false, phases: [] },
+                            craft2: { completed: false, phases: [] },
+                            craft3: { completed: false, phases: [] },
+                            craft4: { completed: false, phases: [] },
+                            craft5: { completed: false, phases: [] }
+                        },
+                        totalTime: 0,
+                        createdAt: new Date()
+                    });
+                    console.log("New user profile created");
+                }
+            } else {
+                // Not logged in, redirect to login
+                window.location.href = 'index.html?login=required';
+            }
+        });
+
+        function loadProgress(data) {
+            // Update progress bars based on data
+            if (data.crafts) {
+                Object.keys(data.crafts).forEach((craftKey, index) => {
+                    const craft = data.crafts[craftKey];
+                    const completed = craft.phases ? craft.phases.length : 0;
+                    const total = index === 0 ? 1 : 8; // Craft 0 has 1 phase, others have 8
+                    const percentage = (completed / total) * 100;
+                    
+                    const fillElement = document.getElementById(craftKey + '-fill');
+                    const statusElement = document.getElementById(craftKey + '-status');
+                    
+                    if (fillElement) {
+                        fillElement.style.width = percentage + '%';
+                        if (craft.completed) {
+                            fillElement.style.background = 'linear-gradient(90deg, #27ae60 0%, #229954 100%)';
+                            statusElement.textContent = '✅ Complete';
+                        } else if (percentage > 0) {
+                            fillElement.style.background = 'linear-gradient(90deg, #f39c12 0%, #e67e22 100%)';
+                            statusElement.textContent = percentage.toFixed(0) + '% Complete';
+                        }
+                    }
+                });
+            }
+        }
+
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
+</body>
+</html>
