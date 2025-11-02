@@ -1,0 +1,9 @@
+Mode,Clients,Requests,Success_Rate,RPS,Total_Time
+file-based,20,100,,,
+file-based,50,100,,,
+file-based,100,100,,,
+file-based,200,100,,,
+kafka,20,100,,,
+kafka,50,100,,,
+kafka,100,100,,,
+kafka,200,100,,,

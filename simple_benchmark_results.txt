@@ -1,0 +1,8 @@
+Mode,Test,RPS,Success_Rate,Avg_Latency_ms
+file,10x50,,,
+file,20x50,,,
+file,50x20,,,
+kafka,10x50,,,
+kafka,20x50,,,
+kafka,50x20,,,
+kafka,100x20,,,

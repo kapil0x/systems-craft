@@ -216,19 +216,24 @@ MetricValidator::ValidationResult MetricValidator::validate_batch(const MetricBa
     return result;
 }
 
-IngestionService::IngestionService(int port, size_t rate_limit)
-    : metrics_received_(0), batches_processed_(0), validation_errors_(0), rate_limited_(0) {
+IngestionService::IngestionService(int port, size_t rate_limit, int num_partitions,
+                                 QueueMode mode, const std::string& kafka_brokers)
+    : metrics_received_(0), batches_processed_(0), validation_errors_(0), rate_limited_(0),
+      queue_mode_(mode) {
     
     server_ = std::make_unique<HttpServer>(port);
     validator_ = std::make_unique<MetricValidator>();
     rate_limiter_ = std::make_unique<RateLimiter>(rate_limit);
-    
-    // Open metrics file for storage
-    metrics_file_.open("metrics.jsonl", std::ios::app);
-    if (!metrics_file_.is_open()) {
-        std::cerr << "Warning: Could not open metrics.jsonl for writing" << std::endl;
+
+    // Initialize the appropriate queue based on mode
+    if (queue_mode_ == QueueMode::FILE_BASED) {
+        file_queue_ = std::make_unique<PartitionedQueue>("queue", num_partitions);
+        std::cout << "Initialized file-based partitioned queue with " << num_partitions << " partitions\n";
+    } else if (queue_mode_ == QueueMode::KAFKA) {
+        kafka_producer_ = std::make_unique<KafkaProducer>(kafka_brokers, "metrics");
+        std::cout << "Initialized Kafka producer: brokers=" << kafka_brokers << ", topic=metrics\n";
     }
-    
+
     // Start async writer thread
     writer_thread_ = std::thread(&IngestionService::async_writer_loop, this);
     
@@ -301,8 +306,8 @@ HttpResponse IngestionService::handle_metrics_post(const HttpRequest& request) {
         metrics_received_ += batch.size();
         batches_processed_++;
         
-        // Queue metrics for asynchronous writing (no blocking!)
-        queue_metrics_for_async_write(batch);
+        // Queue metrics for asynchronous writing to queue
+        queue_metrics_for_async_write(batch, client_id);
         
         response.body = create_success_response(batch.size());
         
@@ -668,23 +673,20 @@ Tags IngestionService::extract_tags(const std::string& json) {
     return tags;
 }
 
-void IngestionService::store_metrics_to_file(const MetricBatch& batch) {
-    if (!metrics_file_.is_open()) {
-        return;
-    }
-    
-    std::lock_guard<std::mutex> lock(file_mutex_);
-    
-    for (const auto& metric : batch.metrics) {
-        // Convert timestamp to ISO string
-        auto time_t = std::chrono::system_clock::to_time_t(metric.timestamp);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            metric.timestamp.time_since_epoch()) % 1000;
-        
-        char timestamp_str[32];
-        std::strftime(timestamp_str, sizeof(timestamp_str), "%Y-%m-%dT%H:%M:%S", std::gmtime(&time_t));
-        
-        // Convert metric type to string
+std::string IngestionService::serialize_metrics_batch_to_json(const MetricBatch& batch) {
+    // Simple JSON serialization for learning - in production you'd use a proper JSON library
+    std::string json = R"(
+{
+  "batch_timestamp": ")" + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count()) + R"(",
+  "metrics": [)";
+
+    for (size_t i = 0; i < batch.metrics.size(); ++i) {
+        const auto& metric = batch.metrics[i];
+        json += "\n    {\n";
+        json += "      \"name\": \"" + metric.name + "\",\n";
+        json += "      \"value\": " + std::to_string(metric.value) + ",\n";
+
         std::string type_str;
         switch (metric.type) {
             case MetricType::COUNTER: type_str = "counter"; break;
@@ -692,30 +694,44 @@ void IngestionService::store_metrics_to_file(const MetricBatch& batch) {
             case MetricType::HISTOGRAM: type_str = "histogram"; break;
             case MetricType::SUMMARY: type_str = "summary"; break;
         }
-        
-        // Write as JSON Lines format
-        metrics_file_ << "{"
-                     << "\"timestamp\":\"" << timestamp_str << "." << std::setfill('0') << std::setw(3) << ms.count() << "Z\","
-                     << "\"name\":\"" << metric.name << "\","
-                     << "\"value\":" << metric.value << ","
-                     << "\"type\":\"" << type_str << "\"";
-        
-        // Add tags if present
-        if (!metric.tags.empty()) {
-            metrics_file_ << ",\"tags\":{";
-            bool first = true;
-            for (const auto& [key, value] : metric.tags) {
-                if (!first) metrics_file_ << ",";
-                metrics_file_ << "\"" << key << "\":\"" << value << "\"";
-                first = false;
-            }
-            metrics_file_ << "}";
+        json += "      \"type\": \"" + type_str + "\"\n    }";
+
+        if (i < batch.metrics.size() - 1) {
+            json += ",";
         }
-        
-        metrics_file_ << "}\n";
     }
-    
-    metrics_file_.flush(); // Ensure data is written immediately
+
+    json += "\n  ]\n}\n";
+    return json;
+}
+
+void IngestionService::store_metrics_to_queue(const MetricBatch& batch, const std::string& client_id) {
+// Serialize entire batch as JSON message
+std::string message = serialize_metrics_batch_to_json(batch);
+
+try {
+    if (queue_mode_ == QueueMode::FILE_BASED) {
+        // Write to partitioned file queue
+        auto [partition, offset] = file_queue_->produce(client_id, message);
+    std::cout << "Queued metrics batch (file): partition=" << partition
+              << ", offset=" << offset
+              << ", client=" << client_id
+          << ", metrics=" << batch.size() << "\n";
+
+} else if (queue_mode_ == QueueMode::KAFKA) {
+    // Write to Kafka
+    RdKafka::ErrorCode err = kafka_producer_->produce(client_id, message);
+    if (err != RdKafka::ERR_NO_ERROR) {
+        throw std::runtime_error("Kafka produce failed: " + RdKafka::err2str(err));
+    }
+std::cout << "Queued metrics batch (kafka): client=" << client_id
+          << ", metrics=" << batch.size() << "\n";
+}
+
+} catch (const std::exception& e) {
+std::cerr << "Failed to write metrics batch to queue: " << e.what() << "\n";
+// In production, you might want to retry or write to a fallback location
+}
 }
 
 std::string IngestionService::create_error_response(const std::string& message) {
@@ -726,10 +742,10 @@ std::string IngestionService::create_success_response(size_t metrics_count) {
     return "{\"success\":true,\"metrics_processed\":" + std::to_string(metrics_count) + "}";
 }
 
-void IngestionService::queue_metrics_for_async_write(const MetricBatch& batch) {
+void IngestionService::queue_metrics_for_async_write(const MetricBatch& batch, const std::string& client_id) {
     {
         std::lock_guard<std::mutex> lock(queue_mutex_);
-        write_queue_.push(batch);
+        write_queue_.push({batch, client_id});
     }
     queue_cv_.notify_one(); // Wake up writer thread
 }
@@ -745,15 +761,15 @@ void IngestionService::async_writer_loop() {
         
         // Process all pending batches
         while (!write_queue_.empty() && writer_running_) {
-            MetricBatch batch = write_queue_.front();
+            auto [batch, client_id] = write_queue_.front();
             write_queue_.pop();
-            
+
             // Release lock before expensive I/O operation
             lock.unlock();
-            
-            // Write batch to file (this is now done asynchronously)
-            store_metrics_to_file(batch);
-            
+
+            // Write batch to queue (file-based or Kafka)
+            store_metrics_to_queue(batch, client_id);
+
             // Reacquire lock for next iteration
             lock.lock();
         }

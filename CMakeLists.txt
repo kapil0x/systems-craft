@@ -18,8 +18,17 @@ endif()
 # Find required packages
 find_package(Threads REQUIRED)
 
+# Find librdkafka
+find_path(RDKAFKA_INCLUDE_DIR librdkafka/rdkafkacpp.h PATHS /opt/homebrew/include)
+find_library(RDKAFKA_LIBRARY rdkafka++ PATHS /opt/homebrew/lib)
+find_library(RDKAFKA_C_LIBRARY rdkafka PATHS /opt/homebrew/lib)
+
+if(NOT RDKAFKA_INCLUDE_DIR OR NOT RDKAFKA_LIBRARY)
+    message(FATAL_ERROR "librdkafka not found. Please install with: brew install librdkafka")
+endif()
+
 # Include directories
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include ${RDKAFKA_INCLUDE_DIR})
 
 # Add subdirectories
 add_subdirectory(src)
@@ -36,6 +45,8 @@ add_executable(metricstream_server
 target_link_libraries(metricstream_server
     ingestion_lib
     common_lib
+    ${RDKAFKA_LIBRARY}
+    ${RDKAFKA_C_LIBRARY}
     Threads::Threads
 )
 
@@ -63,5 +74,19 @@ add_executable(load_test_persistent
 )
 
 target_link_libraries(load_test_persistent
+    Threads::Threads
+)
+
+# Create queue consumer executable
+add_executable(metricstream_consumer
+    src/consumer_main.cpp
+)
+
+target_link_libraries(metricstream_consumer
+    queue_consumer_lib
+    kafka_consumer_lib
+    partitioned_queue_lib
+    ${RDKAFKA_LIBRARY}
+    ${RDKAFKA_C_LIBRARY}
     Threads::Threads
 )
