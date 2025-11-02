@@ -663,6 +663,9 @@
                             }
                         });
                     }
+
+                    // Load leaderboard after user data is loaded
+                    loadLeaderboard();
                 } catch (error) {
                     console.error("Error loading/creating user progress:", error);
                     alert("Error loading progress: " + error.message);
@@ -746,6 +749,61 @@
                 }
             } catch (error) {
                 console.error("Error saving progress:", error);
+            }
+        }
+
+        // Load leaderboard data from Firestore
+        async function loadLeaderboard() {
+            if (!db) return;
+
+            try {
+                // Get all users sorted by bestPerformance
+                const snapshot = await db.collection('users')
+                    .orderBy('bestPerformance', 'desc')
+                    .limit(10)
+                    .get();
+
+                const tbody = document.querySelector('.leaderboard-table tbody');
+                if (!tbody) return;
+
+                let html = '';
+                snapshot.forEach((doc, index) => {
+                    const user = doc.data();
+                    const rank = index + 1;
+                    const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '📍';
+                    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+
+                    // Count completed crafts
+                    let completedCount = 0;
+                    if (user.crafts) {
+                        Object.values(user.crafts).forEach(craft => {
+                            if (craft.completed) completedCount++;
+                        });
+                    }
+
+                    const rps = user.bestPerformance ? user.bestPerformance + ' RPS' : '—';
+                    const isCurrentUser = auth.currentUser && auth.currentUser.uid === doc.id ? ' you' : '';
+
+                    html += `
+                        <tr class="${isCurrentUser}">
+                            <td class="rank ${rankClass}">${rankEmoji} ${rank}</td>
+                            <td>${user.email || 'Anonymous'}</td>
+                            <td>✅ ${completedCount}/6</td>
+                            <td>${rps}</td>
+                            <td>${user.createdAt ? 'In Progress' : '—'}</td>
+                        </tr>
+                    `;
+                });
+
+                if (snapshot.empty) {
+                    html = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #95a5a6;">No results yet. Be the first!</td></tr>';
+                }
+
+                tbody.innerHTML = html;
+                console.log("✅ Leaderboard loaded:", snapshot.size, "users");
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+                console.log("Tip: Make sure Firestore is configured and security rules allow public reads");
             }
         }
 
