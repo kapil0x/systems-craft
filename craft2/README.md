@@ -79,12 +79,12 @@ Ingestion → [Queue] → Consumer Group (multi-machine)
 - Consumer: `QueueConsumer` reads from partitions with offset tracking
 
 **Performance:**
-- **Throughput:** ~800 RPS (fsync bottleneck)
+- **Throughput:** ~200 RPS (measured with 20 clients, 50 requests each)
 - **Latency:** ~0.70ms avg (file I/O)
-- **Success Rate:** 97.4% @ 50 clients
+- **Success Rate:** 97.4% @ 20 clients
 - **Limitation:** Single machine only, disk I/O bound
 
-**Key Learning:** File-based queues are simple and durable, but limited by disk I/O. Production systems need batching and async I/O to scale.
+**Key Learning:** File-based queues are simple and durable. At small scale (~200 RPS), file I/O is the primary bottleneck for latency, not throughput.
 
 ---
 
@@ -111,19 +111,19 @@ Ingestion → [Queue] → Consumer Group (multi-machine)
   4. Message lifetime issues with async sends
 
 **Performance:**
-- **Throughput:** 100,000+ RPS (125x faster than file-based!)
-- **Latency:** ~0.15ms avg (4.6x faster than file-based)
-- **Success Rate:** 97.9% @ 50 clients
-- **Scalability:** Horizontal scaling across machines
+- **Throughput:** ~200 RPS (same as file-based at small scale)
+- **Latency:** ~0.15ms avg (4.6x faster than file-based!)
+- **Success Rate:** 97.9% @ 20 clients
+- **Scalability:** Can scale horizontally across machines (not tested at scale in this implementation)
 
-**Key Learning:** Production message queues use batching, zero-copy I/O, and distributed coordination to achieve 100x+ throughput. The complexity is justified at scale.
+**Key Learning:** At small scale (~200 RPS), Kafka's main benefit is latency (4.6x faster), not throughput. Kafka's throughput advantages (100K+ RPS) require larger deployments with proper hardware/tuning. This implementation demonstrates the architecture and threading challenges, not production-scale performance.
 
 **Comparison Results:**
 ```
-Mode        | RPS     | Latency | Success | Scalability
+Mode        | RPS     | Latency | Success | Key Benefit
 ------------|---------|---------|---------|-------------
-File-based  | 800     | 0.70ms  | 97.4%   | Single machine
-Kafka       | 100,000 | 0.15ms  | 97.9%   | Horizontal
+File-based  | ~200    | 0.70ms  | 97.4%   | Simple, durable
+Kafka       | ~200    | 0.15ms  | 97.9%   | Lower latency, horizontally scalable
 ```
 
 **Threading Insights:**

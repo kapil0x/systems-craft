@@ -123,11 +123,11 @@ Optimized through **8 phases**:
 **Location:** [`craft2/`](craft2/) | **Documentation:** [`craft2/README.md`](craft2/README.md)
 
 Kafka-like distributed queue through **3 phases**:
-- **Phase 1:** File-based partitioned queue → ✅ **COMPLETE** (800 RPS, 0.70ms latency)
-- **Phase 2:** Kafka integration & comparison → ✅ **COMPLETE** (100K+ RPS, 0.15ms latency, 125x faster!)
+- **Phase 1:** File-based partitioned queue → ✅ **COMPLETE** (~200 RPS, 0.70ms latency)
+- **Phase 2:** Kafka integration & comparison → ✅ **COMPLETE** (~200 RPS, 0.15ms latency, 4.6x faster latency!)
 - **Phase 3:** Distributed coordination (ZooKeeper/Raft) → 📝 Planned
 
-**Current Performance:** 100,000+ RPS with Kafka backend (97.9% success rate)
+**Current Performance:** ~200 RPS (both modes), 0.15ms latency with Kafka (4.6x improvement), 97.9% success rate
 **Time:** 8-12 hours total across all phases
 **Status:** Phase 1-2 complete, Phase 3 in design
 
