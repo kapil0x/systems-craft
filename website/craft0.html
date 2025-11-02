@@ -555,6 +555,18 @@
             </ul>
         </div>
 
+        <!-- Mark Completion -->
+        <div class="content-section" style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border-left: 4px solid #27ae60;">
+            <h2>✅ Completed This Craft?</h2>
+            <p>Mark your progress and track it on your progress dashboard.</p>
+            <button onclick="markCraftComplete('craft0')" class="button" style="background: #27ae60; border-color: #27ae60; margin-top: 15px;">
+                ✓ Mark Craft #0 as Complete
+            </button>
+            <p style="font-size: 0.9em; color: #555; margin-top: 15px;">
+                Syncs to your progress dashboard if you're signed in
+            </p>
+        </div>
+
         <footer>
             <p>
                 <a href="index.html">← Back to Systems Craft</a> •
@@ -567,5 +579,66 @@
             </p>
         </footer>
     </div>
+
+    <!-- Craft Completion Script -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Configuration (same as progress.html)
+        // IMPORTANT: These must match the values in progress.html
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "systems-craft.firebaseapp.com",
+            projectId: "systems-craft",
+            storageBucket: "systems-craft.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let db = null;
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (error) {
+            console.error("Firebase not configured - progress won't sync");
+        }
+
+        async function markCraftComplete(craftKey) {
+            // Save to localStorage (works offline)
+            const completedCrafts = JSON.parse(localStorage.getItem('completedCrafts') || '{}');
+            completedCrafts[craftKey] = {
+                completedAt: new Date().toISOString(),
+                markedComplete: true
+            };
+            localStorage.setItem('completedCrafts', JSON.stringify(completedCrafts));
+
+            // Try to sync to Firestore if user is logged in
+            if (db && firebase.auth().currentUser) {
+                try {
+                    const userId = firebase.auth().currentUser.uid;
+                    const docRef = db.collection('users').doc(userId);
+
+                    await docRef.update({
+                        [`crafts.${craftKey}.completed`]: true,
+                        [`crafts.${craftKey}.phases`]: [1],
+                        [`crafts.${craftKey}.completedAt`]: new Date()
+                    });
+
+                    console.log("✅ Progress saved to Firestore!");
+                    alert("🎉 Great job! Your progress has been saved to your dashboard.");
+                } catch (error) {
+                    console.error("Error saving to Firestore:", error);
+                    alert("✅ Marked as complete! (Sync with Firestore failed - see console)");
+                }
+            } else {
+                alert("✅ Marked as complete locally! Sign in to sync to your dashboard.");
+                console.log("To sync progress, visit: progress.html and sign in");
+            }
+        }
+    </script>
 </body>
 </html>

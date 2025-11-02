@@ -322,17 +322,40 @@
 </head>
 <body>
     <div class="container">
-        <a href="index.html" class="back-link">← Back to Systems Craft</a>
+        <!-- Login Screen (shown when not authenticated) -->
+        <div id="loginScreen" style="display: none; text-align: center; padding: 60px 20px;">
+            <div class="card" style="max-width: 400px; margin: 0 auto;">
+                <h2 style="margin-bottom: 10px;">📊 Sign In to Your Progress</h2>
+                <p style="color: #7f8c8d; margin-bottom: 30px;">Track your Systems Craft learning journey</p>
 
-        <header>
-            <div>
-                <h1>📊 My Progress</h1>
+                <button onclick="signInWithGoogle()" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
+                    🔐 Sign In with Google
+                </button>
+
+                <button onclick="signInWithGitHub()" class="btn btn-secondary" style="width: 100%; margin-bottom: 20px;">
+                    🐙 Sign In with GitHub
+                </button>
+
+                <p style="font-size: 0.85em; color: #95a5a6;">
+                    Your progress data is securely stored in Firebase<br>
+                    <a href="FIREBASE_SETUP.md" style="color: #3498db; text-decoration: none;">Need help setting up Firebase?</a>
+                </p>
             </div>
-            <div class="user-info">
-                <div class="user-email" id="userEmail">Loading...</div>
-                <button class="logout-btn" onclick="logoutUser()">Sign Out</button>
-            </div>
-        </header>
+        </div>
+
+        <!-- Main Dashboard (shown when authenticated) -->
+        <div id="dashboardScreen" style="display: none;">
+            <a href="index.html" class="back-link">← Back to Systems Craft</a>
+
+            <header>
+                <div>
+                    <h1>📊 My Progress</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-email" id="userEmail">Loading...</div>
+                    <button class="logout-btn" onclick="logoutUser()">Sign Out</button>
+                </div>
+            </header>
 
         <div class="dashboard">
             <!-- Crafts Progress -->
@@ -501,6 +524,7 @@
             <a href="craft0.html" class="btn btn-primary" style="margin-right: 15px;">Start Craft #0</a>
             <a href="index.html" class="btn btn-secondary">Back to Home</a>
         </div>
+        </div>
     </div>
 
     <!-- Firebase -->
@@ -509,80 +533,219 @@
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
 
     <script>
-        // Firebase Configuration
+        // ========================================
+        // Firebase Configuration & Initialization
+        // ========================================
+        // IMPORTANT: Update these values with your actual Firebase credentials
+        // See FIREBASE_SETUP.md for step-by-step instructions
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "systems-craft.firebaseapp.com",
-            projectId: "systems-craft",
-            storageBucket: "systems-craft.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "YOUR_API_KEY",           // From Firebase Console
+            authDomain: "systems-craft.firebaseapp.com",  // Replace with your project ID
+            projectId: "systems-craft",       // From Firebase Console
+            storageBucket: "systems-craft.appspot.com",   // Replace with your project ID
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // From Firebase Console
+            appId: "YOUR_APP_ID"              // From Firebase Console
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        let auth, db;
+        let firebaseInitialized = false;
 
-        // Check authentication status
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            firebaseInitialized = true;
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            console.error("Please follow the Firebase setup instructions in FIREBASE_SETUP.md");
+            document.getElementById('loginScreen').innerHTML = `
+                <div class="card" style="max-width: 500px; margin: 0 auto; border: 2px solid #e74c3c;">
+                    <h2 style="color: #e74c3c; margin-bottom: 10px;">⚠️ Firebase Not Configured</h2>
+                    <p style="color: #c0392b; margin-bottom: 20px;">
+                        The progress tracking system requires Firebase configuration to work.
+                    </p>
+                    <p style="margin-bottom: 20px; text-align: left; background: #fdeef0; padding: 15px; border-radius: 8px;">
+                        <strong>Steps to fix:</strong><br>
+                        1. Open <code>website/progress.html</code><br>
+                        2. Find the <code>firebaseConfig</code> object (around line 545)<br>
+                        3. Replace the placeholder values with your actual Firebase credentials<br>
+                        4. See <a href="FIREBASE_SETUP.md" style="color: #3498db;">FIREBASE_SETUP.md</a> for detailed instructions
+                    </p>
+                    <a href="FIREBASE_SETUP.md" class="btn btn-primary" style="display: inline-block;">Go to Setup Guide</a>
+                </div>
+            `;
+            document.getElementById('loginScreen').style.display = 'block';
+        }
+
+        // ========================================
+        // Authentication Handlers
+        // ========================================
+
+        function signInWithGoogle() {
+            if (!firebaseInitialized) {
+                alert("Firebase is not configured. Please see FIREBASE_SETUP.md");
+                return;
+            }
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("Google sign-in error:", error);
+                alert("Sign-in failed: " + error.message);
+            });
+        }
+
+        function signInWithGitHub() {
+            if (!firebaseInitialized) {
+                alert("Firebase is not configured. Please see FIREBASE_SETUP.md");
+                return;
+            }
+            const provider = new firebase.auth.GithubAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("GitHub sign-in error:", error);
+                alert("Sign-in failed: " + error.message);
+            });
+        }
+
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+
+        // ========================================
+        // Monitor Authentication State
+        // ========================================
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                console.log("User logged in:", user.email);
+                console.log("✅ User logged in:", user.email);
+
+                // Show dashboard, hide login screen
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboardScreen').style.display = 'block';
                 document.getElementById('userEmail').textContent = user.email;
-                
+
                 // Load user progress from Firestore
-                const docRef = db.collection('users').doc(user.uid);
-                const docSnap = await docRef.get();
-                
-                if (docSnap.exists) {
-                    const data = docSnap.data();
-                    loadProgress(data);
-                } else {
-                    // Create new user document
-                    await docRef.set({
-                        email: user.email,
-                        crafts: {
-                            craft0: { completed: false, phases: [] },
-                            craft1: { completed: false, phases: [] },
-                            craft2: { completed: false, phases: [] },
-                            craft3: { completed: false, phases: [] },
-                            craft4: { completed: false, phases: [] },
-                            craft5: { completed: false, phases: [] }
-                        },
-                        totalTime: 0,
-                        createdAt: new Date()
-                    });
-                    console.log("New user profile created");
+                try {
+                    const docRef = db.collection('users').doc(user.uid);
+                    const docSnap = await docRef.get();
+
+                    if (docSnap.exists) {
+                        console.log("📊 User progress loaded from Firestore");
+                        const data = docSnap.data();
+                        loadProgress(data);
+                    } else {
+                        console.log("🆕 Creating new user profile");
+                        // Create new user document on first login
+                        await docRef.set({
+                            email: user.email,
+                            crafts: {
+                                craft0: { completed: false, phases: [] },
+                                craft1: { completed: false, phases: [] },
+                                craft2: { completed: false, phases: [] },
+                                craft3: { completed: false, phases: [] },
+                                craft4: { completed: false, phases: [] },
+                                craft5: { completed: false, phases: [] }
+                            },
+                            totalTime: 0,
+                            bestPerformance: 0,
+                            currentRank: 0,
+                            createdAt: new Date()
+                        });
+                        console.log("✅ New user profile created");
+                        loadProgress({
+                            crafts: {
+                                craft0: { completed: false, phases: [] },
+                                craft1: { completed: false, phases: [] },
+                                craft2: { completed: false, phases: [] },
+                                craft3: { completed: false, phases: [] },
+                                craft4: { completed: false, phases: [] },
+                                craft5: { completed: false, phases: [] }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading/creating user progress:", error);
+                    alert("Error loading progress: " + error.message);
                 }
             } else {
-                // Not logged in, redirect to login
-                window.location.href = 'index.html?login=required';
+                // Not logged in, show login screen
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('dashboardScreen').style.display = 'none';
             }
         });
 
+        // ========================================
+        // Progress Loading & Saving
+        // ========================================
+
         function loadProgress(data) {
-            // Update progress bars based on data
+            console.log("📈 Updating progress bars from data...");
+
             if (data.crafts) {
+                // Calculate and display progress for each craft
                 Object.keys(data.crafts).forEach((craftKey, index) => {
                     const craft = data.crafts[craftKey];
+
+                    // Count completed phases
                     const completed = craft.phases ? craft.phases.length : 0;
                     const total = index === 0 ? 1 : 8; // Craft 0 has 1 phase, others have 8
                     const percentage = (completed / total) * 100;
-                    
+
+                    // Update UI elements
                     const fillElement = document.getElementById(craftKey + '-fill');
                     const statusElement = document.getElementById(craftKey + '-status');
-                    
-                    if (fillElement) {
+
+                    if (fillElement && statusElement) {
+                        // Animate progress bar
+                        fillElement.style.transition = 'width 0.5s ease';
                         fillElement.style.width = percentage + '%';
+
+                        // Color code based on status
                         if (craft.completed) {
                             fillElement.style.background = 'linear-gradient(90deg, #27ae60 0%, #229954 100%)';
                             statusElement.textContent = '✅ Complete';
+                            statusElement.style.color = '#27ae60';
                         } else if (percentage > 0) {
                             fillElement.style.background = 'linear-gradient(90deg, #f39c12 0%, #e67e22 100%)';
                             statusElement.textContent = percentage.toFixed(0) + '% Complete';
+                            statusElement.style.color = '#f39c12';
+                        } else {
+                            statusElement.textContent = '⏳ Not Started';
+                            statusElement.style.color = '#95a5a6';
                         }
                     }
                 });
+            }
+        }
+
+        // Save progress to Firestore when a craft phase is completed
+        // This function will be called from craft pages when they detect phase completion
+        async function saveProgress(craftKey, phasesCompleted, totalPhases) {
+            if (!auth.currentUser) {
+                console.error("No user logged in");
+                return;
+            }
+
+            try {
+                const docRef = db.collection('users').doc(auth.currentUser.uid);
+                const percentage = (phasesCompleted / totalPhases) * 100;
+                const completed = percentage === 100;
+
+                await docRef.update({
+                    [`crafts.${craftKey}.phases`]: Array.from({length: phasesCompleted}, (_, i) => i + 1),
+                    [`crafts.${craftKey}.completed`]: completed,
+                    [`crafts.${craftKey}.updatedAt`]: new Date()
+                });
+
+                console.log("✅ Progress saved:", craftKey, `${phasesCompleted}/${totalPhases}`);
+
+                // Reload progress display
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    loadProgress(docSnap.data());
+                }
+            } catch (error) {
+                console.error("Error saving progress:", error);
             }
         }
 

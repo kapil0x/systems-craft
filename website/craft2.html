@@ -663,6 +663,18 @@ kafka-topics --create --bootstrap-server localhost:9092 \
                 <li>Craft #5: Alert on anomalies (<1 minute latency)</li>
             </ul>
         </div>
+
+        <!-- Mark Completion -->
+        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border-left: 4px solid #27ae60; padding: 30px; border-radius: 15px; margin-bottom: 40px;">
+            <h2 style="margin-bottom: 15px;">✅ Completed This Craft?</h2>
+            <p>Mark your progress and track it on your progress dashboard.</p>
+            <button onclick="markCraftComplete('craft2')" style="background: #27ae60; border: none; color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; margin-top: 15px; transition: all 0.3s ease;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'">
+                ✓ Mark Craft #2 as Complete
+            </button>
+            <p style="font-size: 0.9em; color: #555; margin-top: 15px;">
+                Syncs to your progress dashboard if you're signed in
+            </p>
+        </div>
     </div>
 
     <script>
@@ -693,6 +705,66 @@ kafka-topics --create --bootstrap-server localhost:9092 \
 
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- Firebase for Craft Completion -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Configuration (same as progress.html)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "systems-craft.firebaseapp.com",
+            projectId: "systems-craft",
+            storageBucket: "systems-craft.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let db = null;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (error) {
+            console.error("Firebase not configured - progress won't sync");
+        }
+
+        async function markCraftComplete(craftKey) {
+            // Save to localStorage (works offline)
+            const completedCrafts = JSON.parse(localStorage.getItem('completedCrafts') || '{}');
+            completedCrafts[craftKey] = {
+                completedAt: new Date().toISOString(),
+                markedComplete: true
+            };
+            localStorage.setItem('completedCrafts', JSON.stringify(completedCrafts));
+
+            // Try to sync to Firestore if user is logged in
+            if (db && firebase.auth().currentUser) {
+                try {
+                    const userId = firebase.auth().currentUser.uid;
+                    const docRef = db.collection('users').doc(userId);
+
+                    // Craft 2 has 3 phases
+                    await docRef.update({
+                        [`crafts.${craftKey}.completed`]: true,
+                        [`crafts.${craftKey}.phases`]: Array.from({length: 3}, (_, i) => i + 1),
+                        [`crafts.${craftKey}.completedAt`]: new Date()
+                    });
+
+                    console.log("✅ Progress saved to Firestore!");
+                    alert("🎉 Great job! Your progress has been saved to your dashboard.");
+                } catch (error) {
+                    console.error("Error saving to Firestore:", error);
+                    alert("✅ Marked as complete! (Sync with Firestore failed - see console)");
+                }
+            } else {
+                alert("✅ Marked as complete locally! Sign in to sync to your dashboard.");
+                console.log("To sync progress, visit: progress.html and sign in");
+            }
         }
     </script>
 </body>
