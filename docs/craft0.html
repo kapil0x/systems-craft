@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft #0: Monitoring Platform PoC - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+        }
+
+        header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .meta {
+            display: flex;
+            gap: 30px;
+            font-size: 1.1em;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .content-section h2 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #27ae60;
+        }
+
+        .content-section h3 {
+            color: #34495e;
+            font-size: 1.6em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .content-section p {
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .content-section ul, .content-section ol {
+            margin-left: 30px;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .content-section li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: #f8f9fa;
+            border-left: 5px solid #27ae60;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box h4 {
+            color: #27ae60;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .architecture-diagram {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            margin: 10px 10px 10px 0;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39,174,96,0.3);
+        }
+
+        .button-secondary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .component-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .component-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-top: 4px solid #27ae60;
+        }
+
+        .component-card h4 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .component-card p {
+            color: #555;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .component-card .tech {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 60px;
+        }
+
+        footer a {
+            color: #f1c40f;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Craft #0: Monitoring Platform PoC</h1>
+            <p class="subtitle">Build a Complete End-to-End System in 2-3 Hours</p>
+            <div class="meta">
+                <div class="meta-item">⏱️ Duration: 2-3 hours</div>
+                <div class="meta-item">📊 Difficulty: Beginner</div>
+                <div class="meta-item">💻 Language: C++17</div>
+            </div>
+        </header>
+
+        <!-- Quick Stats -->
+        <div class="content-section">
+            <h2>📊 What You'll Build</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Components</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">600</div>
+                    <div class="stat-label">Lines of Code</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">~50</div>
+                    <div class="stat-label">RPS Throughput</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">10x</div>
+                    <div class="stat-label">Craft #1 Speedup</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview -->
+        <div class="content-section">
+            <h2>🎯 Overview</h2>
+            <p>
+                Phase 0 is your entry point into distributed systems engineering. Instead of jumping straight into optimizations, you'll build a <strong>working monitoring platform</strong> with all five core components: ingestion, queuing, storage, querying, and alerting. The system is deliberately simple—single-threaded ingestion, blocking I/O, no indexes—to show you the architecture first, and the bottlenecks second.
+            </p>
+
+            <div class="highlight-box">
+                <h4>🧠 Learning Philosophy</h4>
+                <p>
+                    <strong>Working first, optimized later.</strong> You'll build a complete system in hours, see where it's slow, then spend Crafts #1-5 making each component production-grade. This mirrors how senior engineers work: validate architecture before investing in optimization.
+                </p>
+            </div>
+
+            <p>
+                By the end, you'll understand how metrics flow from clients → ingestion → queue → storage → query → alerts, and you'll have measured the performance bottlenecks yourself.
+            </p>
+        </div>
+
+        <!-- Architecture -->
+        <div class="content-section">
+            <h2>🏗️ Architecture</h2>
+
+            <div class="architecture-diagram">
+┌─────────────┐
+│   Clients   │ (send metrics via HTTP POST)
+└──────┬──────┘
+       │ POST /metrics
+       ▼
+┌─────────────────────┐
+│ Component 1:        │
+│ Ingestion API       │ (HTTP server, single-threaded, blocking)
+└──────┬──────────────┘
+       │ push
+       ▼
+┌─────────────────────┐
+│ Component 2:        │
+│ In-Memory Queue     │ (std::queue + mutex, unbounded)
+└──────┬──────────────┘
+       │ pop
+       ▼
+┌─────────────────────┐
+│ Component 3:        │
+│ Storage Consumer    │ (background thread, blocking file writes)
+└──────┬──────────────┘
+       │ write
+       ▼
+   phase0_metrics.jsonl (JSON Lines format)
+       │
+       ├──────────────────┐
+       ▼                  ▼
+┌─────────────┐    ┌─────────────┐
+│ Component 4:│    │ Component 5:│
+│ Query API   │    │ Alerting    │
+└─────────────┘    └─────────────┘
+  GET /query         (polling every 10s)
+            </div>
+
+            <h3>The 5 Components</h3>
+            <div class="component-list">
+                <div class="component-card">
+                    <h4>1. Ingestion API</h4>
+                    <p>HTTP POST /metrics endpoint accepting JSON payloads. Single-threaded, blocking request handling.</p>
+                    <p class="tech">Tech: Raw sockets, simple HTTP parsing</p>
+                </div>
+
+                <div class="component-card">
+                    <h4>2. In-Memory Queue</h4>
+                    <p>Thread-safe queue buffering metrics between ingestion and storage. Unbounded, no persistence.</p>
+                    <p class="tech">Tech: std::queue + std::mutex</p>
+                </div>
+
+                <div class="component-card">
+                    <h4>3. Storage Consumer</h4>
+                    <p>Background thread polling queue and writing metrics to file. Blocking I/O, append-only.</p>
+                    <p class="tech">Tech: std::thread, std::ofstream</p>
+                </div>
+
+                <div class="component-card">
+                    <h4>4. Query API</h4>
+                    <p>HTTP GET /query endpoint reading from file and filtering by name and time range. Full file scan.</p>
+                    <p class="tech">Tech: Linear scan, in-memory filtering</p>
+                </div>
+
+                <div class="component-card">
+                    <h4>5. Alerting Engine</h4>
+                    <p>Background thread checking alert rules periodically. Calculates averages, compares to thresholds.</p>
+                    <p class="tech">Tech: Polling model, console logging</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="content-section">
+            <h2>🚀 Getting Started</h2>
+
+            <h3>1. Build</h3>
+            <div class="code-block">cd phase0
+./build.sh</div>
+
+            <h3>2. Run Server</h3>
+            <div class="code-block">cd build
+./phase0_poc</div>
+
+            <p>You should see all 5 components start:</p>
+            <div class="code-block">[Storage] Consumer started, writing to phase0_metrics.jsonl
+[Alerting] Added rule: cpu_usage > 80 (window: 60s)
+[Alerting] Engine started, checking every 10 seconds
+[Ingestion] Server started on port 8080</div>
+
+            <h3>3. Test It</h3>
+            <p>Open another terminal and send a metric:</p>
+            <div class="code-block">curl -X POST http://localhost:8080/metrics \
+     -H "Content-Type: application/json" \
+     -d '{"name":"cpu_usage","value":85}'
+
+# Response: {"status":"accepted"}</div>
+
+            <p>Query it back:</p>
+            <div class="code-block">curl "http://localhost:8080/query?name=cpu_usage&start=0&end=9999999999999"
+
+# Response: [{"name":"cpu_usage","value":85,"timestamp":1696789234567}]</div>
+
+            <div class="highlight-box">
+                <h4>✨ Quick Demo</h4>
+                <p>Run the full automated demo:</p>
+                <div class="code-block">./demo.sh</div>
+                <p>This ingests sample metrics, queries them, and triggers alerts. Perfect for seeing the end-to-end flow.</p>
+            </div>
+        </div>
+
+        <!-- What You Learn -->
+        <div class="content-section">
+            <h2>🎓 What You'll Learn</h2>
+
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><strong>Component Boundaries:</strong> How to design clean APIs between system components</li>
+                <li><strong>Producer-Consumer Pattern:</strong> Thread-safe queues for decoupling producers from consumers</li>
+                <li><strong>HTTP API Design:</strong> Building RESTful endpoints for metrics ingestion and querying</li>
+                <li><strong>Time-Series Storage:</strong> JSON Lines format for append-only metric storage</li>
+                <li><strong>Rule-Based Alerting:</strong> Evaluating thresholds over time windows</li>
+            </ul>
+
+            <h3>Performance Understanding</h3>
+            <ul>
+                <li><strong>Bottleneck Identification:</strong> See single-threaded ingestion limiting throughput to ~50 RPS</li>
+                <li><strong>Blocking I/O Impact:</strong> Understand how file writes create backpressure</li>
+                <li><strong>Linear Scan Costs:</strong> Feel the slowdown of O(n) queries without indexes</li>
+                <li><strong>Polling Latency:</strong> Experience 10-second alert delays from fixed check intervals</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Intentional Bottlenecks</h4>
+                <p>
+                    This system is <strong>deliberately slow</strong>. The single-threaded ingestion, blocking I/O, and full file scans are educational bottlenecks. You'll feel the pain, measure it with benchmarks, then fix it in Crafts #1-5. This is the learning method.
+                </p>
+            </div>
+        </div>
+
+        <!-- Exercises & Benchmarks -->
+        <div class="content-section">
+            <h2>🔬 Hands-On Learning</h2>
+
+            <h3>Exercises (8-10 hours total)</h3>
+            <p>Deepen your understanding with 10 progressive exercises:</p>
+            <ol>
+                <li><strong>Add Request Logging:</strong> Track latency for every request (20 min)</li>
+                <li><strong>Queue Depth Monitoring:</strong> Detect backpressure in real-time (25 min)</li>
+                <li><strong>Value Range Filtering:</strong> Query metrics by value range (30 min)</li>
+                <li><strong>Batched Ingestion:</strong> Accept multiple metrics in one request (45 min)</li>
+                <li><strong>Alert Deduplication:</strong> Prevent repeated alerts for same condition (40 min)</li>
+                <li><strong>Percentile Queries:</strong> Calculate p50, p90, p99 (60 min)</li>
+                <li><strong>Exponential Backoff:</strong> Retry failed storage writes (45 min)</li>
+                <li><strong>Load Tester:</strong> Build a custom benchmarking tool (60 min)</li>
+                <li><strong>Metric Expiration:</strong> Auto-delete old data (50 min)</li>
+                <li><strong>Web Dashboard:</strong> Real-time metrics visualization (90 min)</li>
+            </ol>
+
+            <p><a href="https://github.com/kapil0x/systems-craft/blob/main/phase0/EXERCISES.md" class="button-secondary button">View All Exercises →</a></p>
+
+            <h3>Performance Benchmarks</h3>
+            <p>Measure system performance with included tools:</p>
+
+            <h4>Shell-based benchmark:</h4>
+            <div class="code-block">./benchmark.sh
+
+# Tests: throughput, latency, query performance, queue depth, storage rate</div>
+
+            <h4>C++ benchmark tool:</h4>
+            <div class="code-block">./build/simple_benchmark localhost 8080 50 100
+
+# 50 concurrent clients, 100 requests each
+# Outputs: RPS, p50/p90/p99 latency, success rate</div>
+
+            <div class="highlight-box">
+                <h4>📈 Expected Results</h4>
+                <ul>
+                    <li><strong>Throughput:</strong> 50-100 RPS (single-threaded bottleneck)</li>
+                    <li><strong>Latency:</strong> 10-20ms average, 50-100ms p99</li>
+                    <li><strong>Query Time:</strong> O(n) scaling - 5ms for 100 metrics, 50ms for 1000</li>
+                    <li><strong>Alert Latency:</strong> Up to 10 seconds (polling interval)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Progression to Craft #1 -->
+        <div class="content-section">
+            <h2>⚡ What's Next: Craft #1</h2>
+
+            <p>Once you understand Phase 0's architecture and bottlenecks, move to <strong>Craft #1: Metrics Ingestion System</strong> to optimize ingestion:</p>
+
+            <h3>Craft #1 Optimizations</h3>
+            <ul>
+                <li><strong>Thread Pool:</strong> One thread per request for concurrent handling</li>
+                <li><strong>Rate Limiting:</strong> Per-client token bucket to prevent abuse</li>
+                <li><strong>JSON Parser Optimization:</strong> O(n²) → O(n) with single-pass parsing</li>
+                <li><strong>Async I/O Pipeline:</strong> Producer-consumer with buffered writes</li>
+            </ul>
+
+            <h3>Expected Improvements</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">10x</div>
+                    <div class="stat-label">Throughput Increase</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">200 → 2,253</div>
+                    <div class="stat-label">RPS Improvement</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">80% → 95%+</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8-12 hours</div>
+                    <div class="stat-label">Time Investment</div>
+                </div>
+            </div>
+
+            <p style="margin-top: 30px;">
+                <a href="craft1.html" class="button">Start Craft #1 →</a>
+            </p>
+        </div>
+
+        <!-- Resources -->
+        <div class="content-section">
+            <h2>📚 Resources</h2>
+
+            <h3>Documentation</h3>
+            <ul>
+                <li><strong>QUICKSTART.md:</strong> 5-minute quick start guide</li>
+                <li><strong>README.md:</strong> Complete reference with architecture details</li>
+                <li><strong>TUTORIAL.md:</strong> 2-3 hour guided tutorial with code walkthrough</li>
+                <li><strong>EXERCISES.md:</strong> 10 hands-on exercises for deep learning</li>
+                <li><strong>VIDEO_SCRIPT.md:</strong> 18-minute video walkthrough script</li>
+            </ul>
+
+            <h3>Tools</h3>
+            <ul>
+                <li><strong>build.sh:</strong> Build script for PoC and benchmarks</li>
+                <li><strong>demo.sh:</strong> Automated end-to-end demo</li>
+                <li><strong>benchmark.sh:</strong> Comprehensive performance testing</li>
+                <li><strong>simple_benchmark:</strong> C++ load testing tool</li>
+            </ul>
+
+            <h3>Links</h3>
+            <ul>
+                <li><a href="https://github.com/kapil0x/systems-craft/tree/main/phase0">GitHub Repository</a></li>
+                <li><a href="https://github.com/kapil0x/systems-craft/issues">Report Issues</a></li>
+                <li><a href="https://github.com/kapil0x/systems-craft/discussions">Community Discussions</a></li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>
+                <a href="index.html">← Back to Systems Craft</a> •
+                <a href="craft1.html">Next: Craft #1 →</a>
+            </p>
+            <p style="margin-top: 20px;">
+                <a href="https://github.com/kapil0x/systems-craft">GitHub</a> •
+                <a href="https://github.com/kapil0x/systems-craft/issues">Issues</a> •
+                <a href="https://github.com/kapil0x/systems-craft/discussions">Discussions</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

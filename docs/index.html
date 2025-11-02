@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems Craft - Learn Systems Engineering by Building Real Infrastructure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 80px 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 4.5em;
+            font-weight: 300;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header .subtitle {
+            font-size: 1.6em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        header .tagline {
+            font-size: 1.2em;
+            opacity: 0.7;
+            font-style: italic;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .intro-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .intro-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .intro-section p {
+            color: #34495e;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .crafts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .craft-card {
+            background: white;
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .craft-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+            transition: height 0.3s ease;
+        }
+
+        .craft-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .craft-card:hover::before {
+            height: 10px;
+        }
+
+        .craft-card.future {
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .craft-card.future::before {
+            background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .craft-card.future:hover {
+            transform: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .craft-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .craft-number {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.8em;
+            margin-right: 20px;
+            box-shadow: 0 4px 15px rgba(39,174,96,0.3);
+        }
+
+        .craft-card.future .craft-number {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            box-shadow: 0 4px 15px rgba(149,165,166,0.3);
+        }
+
+        .craft-title {
+            flex: 1;
+        }
+
+        .craft-title h3 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .craft-status {
+            background: #27ae60;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-left: 15px;
+        }
+
+        .craft-card.future .craft-status {
+            background: #95a5a6;
+        }
+
+        .craft-description {
+            color: #34495e;
+            font-size: 1.05em;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .craft-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .craft-details-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .craft-details-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .craft-details-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .craft-details-value {
+            color: #2c3e50;
+        }
+
+        .craft-milestones {
+            margin-top: 15px;
+        }
+
+        .craft-milestones h4 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .milestone-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .milestone-list li {
+            padding: 8px 0;
+            color: #34495e;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .milestone-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .craft-card.future .milestone-list li::before {
+            content: '○';
+            color: #95a5a6;
+        }
+
+        .craft-cta {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05em;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .craft-card:hover .craft-cta {
+            background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+            box-shadow: 0 4px 15px rgba(39,174,96,0.3);
+        }
+
+        .craft-card.future .craft-cta {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            color: white;
+        }
+
+        .highlight-box h3 {
+            color: #f1c40f;
+            margin-bottom: 15px;
+            font-size: 1.6em;
+        }
+
+        .highlight-box p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            opacity: 0.95;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 60px;
+        }
+
+        footer a {
+            color: #f1c40f;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Systems Craft</h1>
+            <p class="subtitle">Learn Large-Scale Systems Design by Building Real Infrastructure</p>
+            <p class="tagline">Hands-on tutorials teaching distributed systems architecture, systems design, and infrastructure engineering by building a complete monitoring platform from scratch</p>
+        </header>
+
+        <div class="intro-section">
+            <h2>🎯 What is Systems Craft?</h2>
+            <p>Systems Craft teaches you how to design and build large-scale distributed systems by constructing a complete monitoring infrastructure. Start with a working proof-of-concept in an afternoon (Craft #0), then build each component production-grade: ingestion, message queue, storage, querying, and alerting. Learn how real distributed systems work at companies like Google, Netflix, and Amazon.</p>
+
+            <p><strong>You'll learn systems design the way senior engineers at Big Tech do:</strong></p>
+            <ul style="margin-left: 30px; margin-top: 10px; color: #34495e; font-size: 1.05em;">
+                <li>Architect distributed systems that scale to millions of requests</li>
+                <li>Design storage engines optimized for specific access patterns</li>
+                <li>Build resilient systems with replication and fault tolerance</li>
+                <li>Implement real-time data pipelines and stream processing</li>
+            </ul>
+
+            <p style="margin-top: 20px;"><strong>Plus: Learn to coordinate AI agents like a tech lead:</strong></p>
+            <ul style="margin-left: 30px; margin-top: 10px; color: #34495e; font-size: 1.05em;">
+                <li>Decompose systems into independent services with clear API contracts</li>
+                <li>Coordinate multiple AI agents building components in parallel</li>
+                <li>Practice the exact skills you'll need when every engineer manages teams of AI</li>
+                <li>Learn service boundaries, API design, and distributed team coordination</li>
+            </ul>
+        </div>
+
+        <div class="highlight-box">
+            <h3>💼 Real Systems Design, Not Toy Examples</h3>
+            <p>At Big Tech, infrastructure teams don't just use databases—they build them. They don't just deploy to Kubernetes—they understand the distributed systems patterns that make it work. Systems Craft teaches you to think at that level: designing data models, choosing consistency guarantees, architecting for failure, and building systems that handle real-world scale.</p>
+            
+            <p style="margin-top: 15px;"><strong>The Future: Everyone is a Tech Lead</strong> — In 2-3 years, every engineer will coordinate multiple AI agents to build systems. You won't write every line—you'll orchestrate agents like a tech lead manages a team. Systems Craft teaches you distributed systems design AND the decomposition/coordination skills to work with AI at scale.</p>
+        </div>
+
+        <h2 style="color: white; text-align: center; font-size: 2.5em; margin: 60px 0 40px 0;">🎨 The Crafts</h2>
+
+        <div class="crafts-grid">
+            <!-- Craft #0: Proof of Concept -->
+            <a href="craft0.html" class="craft-card">
+                <div class="craft-header">
+                    <div class="craft-number">0</div>
+                    <div class="craft-title">
+                        <h3>Monitoring Platform PoC</h3>
+                    </div>
+                    <span class="craft-status">AVAILABLE</span>
+                </div>
+
+                <p class="craft-description">
+                    Build a complete end-to-end monitoring platform in an afternoon. Simple implementations of all 5 components (ingestion, queue, storage, querying, alerting) to see how distributed systems fit together. No optimization, no production concerns—just a working system to validate the architecture.
+                </p>
+
+                <div class="craft-details">
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">What you'll build:</span>
+                        <span class="craft-details-value">HTTP server, in-memory queue, file storage, query API, alert engine</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Systems concepts:</span>
+                        <span class="craft-details-value">Component integration, data flow, producer-consumer pattern, API design</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Duration:</span>
+                        <span class="craft-details-value">2-3 hours (end-to-end working system)</span>
+                    </div>
+                </div>
+
+                <div class="craft-milestones">
+                    <h4>📊 What You'll Learn:</h4>
+                    <ul class="milestone-list">
+                        <li><strong>Big Picture:</strong> How all 5 components connect in a monitoring platform</li>
+                        <li><strong>Data Flow:</strong> Metrics journey from ingestion → storage → query → alert</li>
+                        <li><strong>Quick Wins:</strong> Working system in hours, see bottlenecks immediately</li>
+                        <li><strong>Foundation:</strong> Architecture validated before optimizing (Crafts #1-5)</li>
+                    </ul>
+                </div>
+
+                <div class="craft-cta">
+                    Start Craft #0 →
+                </div>
+            </a>
+
+            <!-- Craft #1: Metrics Ingestion -->
+            <a href="craft1.html" class="craft-card">
+                <div class="craft-header">
+                    <div class="craft-number">1</div>
+                    <div class="craft-title">
+                        <h3>Metrics Ingestion System</h3>
+                    </div>
+                    <span class="craft-status">AVAILABLE</span>
+                </div>
+
+                <p class="craft-description">
+                    Build a metrics ingestion service (like Prometheus or DataDog) from scratch. Design for scale, implement systematic optimizations, and understand the architectural trade-offs in building high-throughput data ingestion systems.
+                </p>
+
+                <div class="craft-details">
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">What you'll build:</span>
+                        <span class="craft-details-value">HTTP API server, rate limiting, async I/O pipeline, data validation layer</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Systems concepts:</span>
+                        <span class="craft-details-value">API design, backpressure handling, resource management, systematic optimization</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Scale achieved:</span>
+                        <span class="craft-details-value">200 RPS → 2,253 RPS through 7 optimization phases</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Duration:</span>
+                        <span class="craft-details-value">8-12 hours (7 phases + system design)</span>
+                    </div>
+                </div>
+
+                <div class="craft-milestones">
+                    <h4>📊 Learning Progression:</h4>
+                    <ul class="milestone-list">
+                        <li><strong>Phase 1-7:</strong> Design and optimize ingestion layer (200 → 2,253 RPS)</li>
+                        <li><strong>Extension:</strong> Integrate with message queue (Kafka) for downstream processing</li>
+                        <li><strong>Extension:</strong> Add stream processing for real-time aggregations</li>
+                        <li><strong>Extension:</strong> Connect to storage layer (foundation for Craft #2)</li>
+                    </ul>
+                </div>
+
+                <div class="craft-cta">
+                    Start Craft #1 →
+                </div>
+            </a>
+
+            <!-- Craft #2: Distributed Message Queue -->
+            <a href="craft2.html" class="craft-card">
+                <div class="craft-header">
+                    <div class="craft-number">2</div>
+                    <div class="craft-title">
+                        <h3>Distributed Message Queue</h3>
+                    </div>
+                    <span class="craft-status">IN PROGRESS (2/3 complete!)</span>
+                </div>
+
+                <p class="craft-description">
+                    Build a distributed message queue (like Kafka or Pulsar) that sits between ingestion and storage. Compare file-based vs Kafka architectures, understand threading bugs in concurrent systems, and measure the 125x performance improvement from batching and async I/O. Learn why production systems justify the complexity.
+                </p>
+
+                <div class="craft-details">
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">What you'll build:</span>
+                        <span class="craft-details-value">File-based partitioned queue, Kafka producer/consumer integration, dual-mode architecture, offset management</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Systems concepts:</span>
+                        <span class="craft-details-value">Partitioning, message ordering, threading bugs, async I/O, batching, zero-copy transfers</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Current performance:</span>
+                        <span class="craft-details-value">100,000+ RPS with Kafka (125x faster than file-based!), 0.15ms latency, 97.9% success rate</span>
+                    </div>
+                </div>
+
+                <div class="craft-milestones">
+                    <h4>📊 Learning Progression:</h4>
+                    <ul class="milestone-list">
+                        <li><strong>Phase 1:</strong> File-based partitioned queue ✅ COMPLETE (800 RPS, 0.70ms latency)</li>
+                        <li><strong>Phase 2:</strong> Kafka integration & comparison ✅ COMPLETE (100K+ RPS, 0.15ms latency, 4 threading bugs fixed!)</li>
+                        <li><strong>Phase 3:</strong> Distributed coordination (ZooKeeper/Raft) 📝 PLANNED</li>
+                    </ul>
+                </div>
+
+                <div class="craft-cta">
+                    Start Craft #2 →
+                </div>
+            </a>
+
+            <!-- Craft #3: Time-Series Storage Engine -->
+            <div class="craft-card future">
+                <div class="craft-header">
+                    <div class="craft-number">3</div>
+                    <div class="craft-title">
+                        <h3>Time-Series Storage Engine</h3>
+                    </div>
+                    <span class="craft-status">COMING SOON</span>
+                </div>
+
+                <p class="craft-description">
+                    Build a time-series database (like InfluxDB or TimescaleDB) optimized for storing and retrieving metrics data. Design storage formats, implement compression algorithms, and architect for write-heavy workloads with efficient point-in-time queries.
+                </p>
+
+                <div class="craft-details">
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">What you'll build:</span>
+                        <span class="craft-details-value">Write-ahead log, LSM tree storage, time-series compression (Gorilla), inverted indexes</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Systems concepts:</span>
+                        <span class="craft-details-value">Storage engine design, data modeling, compression algorithms, indexing strategies</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Target performance:</span>
+                        <span class="craft-details-value">1M+ writes/sec, 10:1 compression ratio, sub-second queries</span>
+                    </div>
+                </div>
+
+                <div class="craft-milestones">
+                    <h4>📊 Learning Progression:</h4>
+                    <ul class="milestone-list">
+                        <li><strong>Phase 1:</strong> WAL and in-memory writes for durability</li>
+                        <li><strong>Phase 2:</strong> LSM tree compaction for efficient storage</li>
+                        <li><strong>Phase 3:</strong> Time-series compression (Gorilla algorithm)</li>
+                        <li><strong>Phase 4:</strong> Tag-based indexing for fast queries</li>
+                    </ul>
+                </div>
+
+                <div class="craft-cta">
+                    Coming Soon
+                </div>
+            </div>
+
+            <!-- Craft #4: Query & Aggregation Engine -->
+            <div class="craft-card future">
+                <div class="craft-header">
+                    <div class="craft-number">4</div>
+                    <div class="craft-title">
+                        <h3>Query & Aggregation Engine</h3>
+                    </div>
+                    <span class="craft-status">COMING SOON</span>
+                </div>
+
+                <p class="craft-description">
+                    Build a query processor that retrieves and aggregates time-series data (like Prometheus PromQL or InfluxDB's query language). Design for parallel execution, implement common aggregations (sum, avg, percentiles), and optimize query planning for time-range queries.
+                </p>
+
+                <div class="craft-details">
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">What you'll build:</span>
+                        <span class="craft-details-value">Query parser, execution planner, parallel aggregation engine, downsampling logic</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Systems concepts:</span>
+                        <span class="craft-details-value">Query optimization, parallel processing, data aggregation, cache-aware design</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Target performance:</span>
+                        <span class="craft-details-value">Query 100M+ data points in <1 second, handle complex aggregations</span>
+                    </div>
+                </div>
+
+                <div class="craft-milestones">
+                    <h4>📊 Learning Progression:</h4>
+                    <ul class="milestone-list">
+                        <li><strong>Phase 1:</strong> Query parser and basic time-range scans</li>
+                        <li><strong>Phase 2:</strong> Aggregation functions (sum, avg, count, rate)</li>
+                        <li><strong>Phase 3:</strong> Parallel execution for multi-series queries</li>
+                        <li><strong>Phase 4:</strong> Query optimizer and result caching</li>
+                    </ul>
+                </div>
+
+                <div class="craft-cta">
+                    Coming Soon
+                </div>
+            </div>
+
+            <!-- Craft #5: Alerting & Notification System -->
+            <div class="craft-card future">
+                <div class="craft-header">
+                    <div class="craft-number">5</div>
+                    <div class="craft-title">
+                        <h3>Alerting & Notification System</h3>
+                    </div>
+                    <span class="craft-status">COMING SOON</span>
+                </div>
+
+                <p class="craft-description">
+                    Build a real-time alerting system (like Prometheus Alertmanager or PagerDuty) that evaluates alert rules, manages alert lifecycle, and delivers notifications. Design for low-latency detection, handle alert routing and grouping, and implement reliable notification delivery.
+                </p>
+
+                <div class="craft-details">
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">What you'll build:</span>
+                        <span class="craft-details-value">Rule evaluation engine, alert state machine, notification dispatcher, escalation policies</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Systems concepts:</span>
+                        <span class="craft-details-value">Event-driven architecture, state management, reliability patterns, webhook delivery</span>
+                    </div>
+                    <div class="craft-details-row">
+                        <span class="craft-details-label">Target performance:</span>
+                        <span class="craft-details-value">Evaluate 10K+ rules/sec, <1 min detection latency, 99.99% notification delivery</span>
+                    </div>
+                </div>
+
+                <div class="craft-milestones">
+                    <h4>📊 Learning Progression:</h4>
+                    <ul class="milestone-list">
+                        <li><strong>Phase 1:</strong> Rule engine and threshold detection</li>
+                        <li><strong>Phase 2:</strong> Alert grouping and deduplication</li>
+                        <li><strong>Phase 3:</strong> Multi-channel notification (email, Slack, PagerDuty)</li>
+                        <li><strong>Phase 4:</strong> Escalation policies and on-call scheduling</li>
+                    </ul>
+                </div>
+
+                <div class="craft-cta">
+                    Coming Soon
+                </div>
+            </div>
+        </div>
+
+        <div class="intro-section" style="margin-top: 60px;">
+            <h2>🚀 Getting Started</h2>
+            <p>Ready to start? <strong>Craft #0 (available now!)</strong> gives you a working end-to-end system in an afternoon. Then dive into <strong>Craft #1: Metrics Ingestion System</strong> to build the first component production-grade. Each craft is self-contained with clear instructions, starter code, and reference implementations.</p>
+
+            <p style="margin-top: 20px;"><strong>Learning Path:</strong></p>
+            <ul style="margin-left: 30px; margin-top: 10px; color: #34495e; font-size: 1.05em;">
+                <li><strong>Craft #0:</strong> Build complete PoC to see the big picture (2-3 hours) ✅ AVAILABLE</li>
+                <li><strong>Crafts #1-5:</strong> Build each component production-grade (8-12 hours each)</li>
+                <li><strong>Result:</strong> Complete monitoring platform with distributed systems knowledge</li>
+            </ul>
+
+            <p style="margin-top: 20px;"><strong>Prerequisites:</strong></p>
+            <ul style="margin-left: 30px; margin-top: 10px; color: #34495e; font-size: 1.05em;">
+                <li>C++ programming experience (C++17 or later)</li>
+                <li>Basic understanding of networking and concurrency</li>
+                <li>Familiarity with command-line tools (git, cmake, make)</li>
+                <li>Curiosity and willingness to learn by doing</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/kapil0x/systems-craft" target="_blank">GitHub Repository</a> •
+                <a href="https://github.com/kapil0x/systems-craft/issues" target="_blank">Report Issues</a> •
+                <a href="https://github.com/kapil0x/systems-craft/discussions" target="_blank">Discussions</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
