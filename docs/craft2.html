@@ -273,25 +273,25 @@
 
             <div class="stat-row">
                 <div class="stat-box">
-                    <div class="stat-label">Current Performance</div>
-                    <div class="stat-value">100K+ RPS</div>
+                    <div class="stat-label">Throughput (Both Modes)</div>
+                    <div class="stat-value">~200 RPS</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Latency</div>
+                    <div class="stat-label">Kafka Latency</div>
                     <div class="stat-value">0.15ms</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Speedup vs File</div>
-                    <div class="stat-value">125x</div>
+                    <div class="stat-label">Latency Improvement</div>
+                    <div class="stat-value">4.6x</div>
                 </div>
             </div>
 
             <h3>Learning Goals</h3>
             <ul>
                 <li><strong>Message Queue Fundamentals:</strong> Partitioning, offsets, producer/consumer patterns</li>
-                <li><strong>Performance Comparison:</strong> File-based (800 RPS) vs Kafka (100K+ RPS) - understand the 125x difference</li>
+                <li><strong>Performance Comparison:</strong> File-based (0.70ms) vs Kafka (0.15ms) - understand the 4.6x latency improvement</li>
                 <li><strong>Threading Bugs:</strong> Find and fix 4 critical bugs in concurrent systems</li>
-                <li><strong>Production Architecture:</strong> Why systems like Kafka justify the complexity at scale</li>
+                <li><strong>Real Trade-offs:</strong> Why Kafka's complexity matters for latency but doesn't always mean higher throughput at small scale</li>
             </ul>
         </div>
 
@@ -347,7 +347,7 @@
                 <div class="stat-row">
                     <div class="stat-box">
                         <div class="stat-label">Throughput</div>
-                        <div class="stat-value">100K+ RPS</div>
+                        <div class="stat-value">~200 RPS</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label">Latency</div>
@@ -367,23 +367,23 @@
                             <th>RPS</th>
                             <th>Latency</th>
                             <th>Success</th>
-                            <th>Scalability</th>
+                            <th>Key Benefit</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>File-based</strong></td>
-                            <td>800</td>
+                            <td>~200</td>
                             <td>0.70ms</td>
                             <td>97.4%</td>
-                            <td>Single machine</td>
+                            <td>Simple, durable</td>
                         </tr>
                         <tr style="background: #d5f4e6;">
                             <td><strong>Kafka</strong></td>
-                            <td><strong>100,000+</strong></td>
-                            <td><strong>0.15ms</strong></td>
+                            <td><strong>~200</strong></td>
+                            <td><strong>0.15ms (4.6x faster!)</strong></td>
                             <td><strong>97.9%</strong></td>
-                            <td><strong>Horizontal</strong></td>
+                            <td><strong>Lower latency, scales horizontally</strong></td>
                         </tr>
                     </tbody>
                 </table>

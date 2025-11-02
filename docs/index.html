@@ -453,7 +453,7 @@
                 </div>
 
                 <p class="craft-description">
-                    Build a distributed message queue (like Kafka or Pulsar) that sits between ingestion and storage. Compare file-based vs Kafka architectures, understand threading bugs in concurrent systems, and measure the 125x performance improvement from batching and async I/O. Learn why production systems justify the complexity.
+                    Build a distributed message queue (like Kafka or Pulsar) that sits between ingestion and storage. Compare file-based vs Kafka architectures, understand threading bugs in concurrent systems, and measure the 4.6x latency improvement from async I/O. Learn what Kafka optimizes for and what it costs in complexity.
                 </p>
 
                 <div class="craft-details">
@@ -463,19 +463,19 @@
                     </div>
                     <div class="craft-details-row">
                         <span class="craft-details-label">Systems concepts:</span>
-                        <span class="craft-details-value">Partitioning, message ordering, threading bugs, async I/O, batching, zero-copy transfers</span>
+                        <span class="craft-details-value">Partitioning, message ordering, threading bugs (4 critical bugs found!), async I/O, librdkafka integration</span>
                     </div>
                     <div class="craft-details-row">
-                        <span class="craft-details-label">Current performance:</span>
-                        <span class="craft-details-value">100,000+ RPS with Kafka (125x faster than file-based!), 0.15ms latency, 97.9% success rate</span>
+                        <span class="craft-details-label">Measured performance:</span>
+                        <span class="craft-details-value">~200 RPS (both modes), 0.15ms latency with Kafka (4.6x faster), 97.9% success rate</span>
                     </div>
                 </div>
 
                 <div class="craft-milestones">
                     <h4>📊 Learning Progression:</h4>
                     <ul class="milestone-list">
-                        <li><strong>Phase 1:</strong> File-based partitioned queue ✅ COMPLETE (800 RPS, 0.70ms latency)</li>
-                        <li><strong>Phase 2:</strong> Kafka integration & comparison ✅ COMPLETE (100K+ RPS, 0.15ms latency, 4 threading bugs fixed!)</li>
+                        <li><strong>Phase 1:</strong> File-based partitioned queue ✅ COMPLETE (~200 RPS, 0.70ms latency)</li>
+                        <li><strong>Phase 2:</strong> Kafka integration & comparison ✅ COMPLETE (~200 RPS, 0.15ms latency, 4 threading bugs fixed!)</li>
                         <li><strong>Phase 3:</strong> Distributed coordination (ZooKeeper/Raft) 📝 PLANNED</li>
                     </ul>
                 </div>
