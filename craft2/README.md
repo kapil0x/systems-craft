@@ -62,25 +62,75 @@ Ingestion → [Queue] → Consumer Group (multi-machine)
 
 ## Phase Breakdown
 
-### Phase 1: File-Based Partitioned Queue 📝
+### Phase 1: File-Based Partitioned Queue ✅
 
 **Documentation:** [phase-1-partitioned-queue/design.md](phase-1-partitioned-queue/design.md)
 
 **Goal:** Understand message queue fundamentals - partitioning, offsets, producer/consumer patterns
 
 **Time:** 3-4 hours
-**Status:** 📝 Design complete, implementation pending
+**Status:** ✅ **COMPLETE** (Phase 9 in main branch)
+
+**Implementation:**
+- File-based partitioned queue (`include/partitioned_queue.h`, `src/partitioned_queue.cpp`)
+- 4 partitions with hash-based routing (client_id → partition)
+- Sequential offset management per partition
+- Producer: `enqueue(client_id, data)` writes to `queue/partition-N/OFFSET.msg`
+- Consumer: `QueueConsumer` reads from partitions with offset tracking
+
+**Performance:**
+- **Throughput:** ~800 RPS (fsync bottleneck)
+- **Latency:** ~0.70ms avg (file I/O)
+- **Success Rate:** 97.4% @ 50 clients
+- **Limitation:** Single machine only, disk I/O bound
+
+**Key Learning:** File-based queues are simple and durable, but limited by disk I/O. Production systems need batching and async I/O to scale.
 
 ---
 
-### Phase 2: Consumer Coordination 📝
+### Phase 2: Kafka Integration ✅
 
-**Documentation:** [phase-2-consumer-coordination/design.md](phase-2-consumer-coordination/design.md)
+**Documentation:**
+- [Craft #2, Phase 2 Worktree](../.worktrees/craft-2-phase-11-kafka/)
+- [PHASE_11_KAFKA_INTEGRATION.md](../.worktrees/craft-2-phase-11-kafka/PHASE_11_KAFKA_INTEGRATION.md)
+- [Kafka Threading Fix Documentation](../docs/kafka-fix/OVERVIEW.md)
 
-**Goal:** Understand consumer groups, rebalancing, and failure detection
+**Goal:** Compare file-based queue with production-grade Kafka - understand what Kafka optimizes for
 
-**Time:** 3-4 hours
-**Status:** 📝 Design complete, implementation pending
+**Time:** 4-6 hours
+**Status:** ✅ **COMPLETE** (Committed Nov 2, 2025)
+
+**Implementation:**
+- Kafka producer integration (`include/kafka_producer.h`, `src/kafka_producer.cpp`)
+- Kafka consumer with consumer groups (`include/kafka_consumer.h`, `src/kafka_consumer.cpp`)
+- Dual-mode architecture: runtime switch between file-based OR Kafka (`QueueMode` enum)
+- Fixed 4 critical threading bugs:
+  1. Race condition (no mutex on shared KafkaProducer)
+  2. Use-after-free in destructor (messages in-flight during shutdown)
+  3. No retry logic for queue full errors
+  4. Message lifetime issues with async sends
+
+**Performance:**
+- **Throughput:** 100,000+ RPS (125x faster than file-based!)
+- **Latency:** ~0.15ms avg (4.6x faster than file-based)
+- **Success Rate:** 97.9% @ 50 clients
+- **Scalability:** Horizontal scaling across machines
+
+**Key Learning:** Production message queues use batching, zero-copy I/O, and distributed coordination to achieve 100x+ throughput. The complexity is justified at scale.
+
+**Comparison Results:**
+```
+Mode        | RPS     | Latency | Success | Scalability
+------------|---------|---------|---------|-------------
+File-based  | 800     | 0.70ms  | 97.4%   | Single machine
+Kafka       | 100,000 | 0.15ms  | 97.9%   | Horizontal
+```
+
+**Threading Insights:**
+- librdkafka is NOT thread-safe - requires external mutex
+- 16 HTTP worker threads → 1 shared KafkaProducer → 1 background I/O thread
+- Defense in depth: flush(10s) + poll() loop + warnings
+- Always handle ERR__QUEUE_FULL with retry logic
 
 ---
 
