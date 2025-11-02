@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft #2: Distributed Message Queue - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            font-weight: 300;
+            margin-bottom: 15px;
+        }
+
+        header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        header .status {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .content-section h2 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #27ae60;
+        }
+
+        .content-section h3 {
+            color: #34495e;
+            font-size: 1.6em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .content-section p {
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .content-section ul {
+            margin-left: 30px;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .content-section li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .phase-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 5px solid #27ae60;
+            padding: 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .phase-card.completed {
+            border-left-color: #27ae60;
+        }
+
+        .phase-card.planned {
+            border-left-color: #95a5a6;
+            opacity: 0.8;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .phase-badge {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .phase-badge.planned {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .phase-title {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .perf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .perf-table th {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .perf-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #555;
+        }
+
+        .perf-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #fcf8e3 100%);
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box h4 {
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+
+        .highlight-box p {
+            color: #7d6608;
+            margin-bottom: 8px;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #c7254e;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Craft #2: Distributed Message Queue</h1>
+            <div class="subtitle">Build a Kafka-like message queue from first principles</div>
+            <div class="status">✅ IN PROGRESS: 2/3 Phases Complete!</div>
+        </header>
+
+        <div class="content-section">
+            <h2>🎯 What You'll Build</h2>
+            <p>In Craft #2, you'll build a distributed message queue that decouples the ingestion service from storage. Start with a simple file-based partitioned queue, then integrate Apache Kafka to understand what production message queues optimize for.</p>
+
+            <div class="stat-row">
+                <div class="stat-box">
+                    <div class="stat-label">Current Performance</div>
+                    <div class="stat-value">100K+ RPS</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Latency</div>
+                    <div class="stat-value">0.15ms</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Speedup vs File</div>
+                    <div class="stat-value">125x</div>
+                </div>
+            </div>
+
+            <h3>Learning Goals</h3>
+            <ul>
+                <li><strong>Message Queue Fundamentals:</strong> Partitioning, offsets, producer/consumer patterns</li>
+                <li><strong>Performance Comparison:</strong> File-based (800 RPS) vs Kafka (100K+ RPS) - understand the 125x difference</li>
+                <li><strong>Threading Bugs:</strong> Find and fix 4 critical bugs in concurrent systems</li>
+                <li><strong>Production Architecture:</strong> Why systems like Kafka justify the complexity at scale</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>📊 Phase Breakdown</h2>
+
+            <!-- Phase 1 -->
+            <div class="phase-card completed">
+                <div class="phase-header">
+                    <div class="phase-badge">✅ COMPLETE</div>
+                    <div class="phase-title">Phase 1: File-Based Partitioned Queue</div>
+                </div>
+
+                <p><strong>Goal:</strong> Understand message queue fundamentals through a simple file-based implementation.</p>
+
+                <h4>What You'll Build:</h4>
+                <ul>
+                    <li>4-partition queue with hash-based routing (client_id → partition)</li>
+                    <li>Sequential offset management per partition</li>
+                    <li>Producer: <code>enqueue(client_id, data)</code> writes to <code>queue/partition-N/OFFSET.msg</code></li>
+                    <li>Consumer: <code>QueueConsumer</code> reads from partitions with offset tracking</li>
+                </ul>
+
+                <h4>Performance Results:</h4>
+                <ul>
+                    <li><strong>Throughput:</strong> ~800 RPS (fsync bottleneck)</li>
+                    <li><strong>Latency:</strong> 0.70ms avg (file I/O bound)</li>
+                    <li><strong>Success Rate:</strong> 97.4% @ 50 clients</li>
+                    <li><strong>Limitation:</strong> Single machine only, disk I/O bound</li>
+                </ul>
+
+                <p><strong>Key Learning:</strong> File-based queues are simple and durable, but limited by disk I/O. Production systems need batching and async I/O to scale.</p>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="phase-card completed">
+                <div class="phase-header">
+                    <div class="phase-badge">✅ COMPLETE</div>
+                    <div class="phase-title">Phase 2: Kafka Integration & Comparison</div>
+                </div>
+
+                <p><strong>Goal:</strong> Compare file-based queue with production-grade Kafka to understand what Kafka optimizes for.</p>
+
+                <h4>What You'll Build:</h4>
+                <ul>
+                    <li>Kafka producer integration (<code>KafkaProducer</code> with librdkafka)</li>
+                    <li>Kafka consumer with consumer groups (<code>KafkaConsumer</code>)</li>
+                    <li>Dual-mode architecture: runtime switch between file-based OR Kafka</li>
+                    <li>Fix 4 critical threading bugs discovered during integration</li>
+                </ul>
+
+                <h4>Performance Results:</h4>
+                <div class="stat-row">
+                    <div class="stat-box">
+                        <div class="stat-label">Throughput</div>
+                        <div class="stat-value">100K+ RPS</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Latency</div>
+                        <div class="stat-value">0.15ms</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-value">97.9%</div>
+                    </div>
+                </div>
+
+                <h4>Performance Comparison:</h4>
+                <table class="perf-table">
+                    <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>RPS</th>
+                            <th>Latency</th>
+                            <th>Success</th>
+                            <th>Scalability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>File-based</strong></td>
+                            <td>800</td>
+                            <td>0.70ms</td>
+                            <td>97.4%</td>
+                            <td>Single machine</td>
+                        </tr>
+                        <tr style="background: #d5f4e6;">
+                            <td><strong>Kafka</strong></td>
+                            <td><strong>100,000+</strong></td>
+                            <td><strong>0.15ms</strong></td>
+                            <td><strong>97.9%</strong></td>
+                            <td><strong>Horizontal</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h4>⚠️ 4 Critical Threading Bugs Fixed</h4>
+                    <p><strong>Bug #1:</strong> Race condition - 16 HTTP workers accessing 1 shared KafkaProducer without mutex</p>
+                    <p><strong>Bug #2:</strong> Use-after-free in destructor when messages still in-flight during shutdown</p>
+                    <p><strong>Bug #3:</strong> No retry logic for ERR__QUEUE_FULL errors (drops messages)</p>
+                    <p><strong>Bug #4:</strong> Message lifetime issues with async sends (stack corruption)</p>
+                    <p style="margin-top: 15px;"><strong>Key Learning:</strong> librdkafka is NOT thread-safe. Requires external mutex synchronization.</p>
+                </div>
+
+                <p><strong>Architecture Insight:</strong> 16 HTTP worker threads → 1 shared KafkaProducer (with mutex) → 1 background I/O thread → Kafka broker</p>
+
+                <h4>Key Learnings:</h4>
+                <ul>
+                    <li><strong>Batching:</strong> Kafka batches messages for efficiency (vs. file-based per-message fsync)</li>
+                    <li><strong>Async I/O:</strong> Zero-copy transfers and memory-mapped buffers</li>
+                    <li><strong>Thread Safety:</strong> Defense in depth: flush(10s) + poll() loop + warnings</li>
+                    <li><strong>Scalability:</strong> Horizontal scaling vs. single-machine limitations</li>
+                </ul>
+
+                <p><strong>Documentation:</strong> Full analysis in <code>docs/kafka-fix/OVERVIEW.md</code></p>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="phase-card planned">
+                <div class="phase-header">
+                    <div class="phase-badge planned">📝 PLANNED</div>
+                    <div class="phase-title">Phase 3: Distributed Coordination</div>
+                </div>
+
+                <p><strong>Goal:</strong> Scale beyond single machine using ZooKeeper/Raft for distributed consensus.</p>
+
+                <h4>What You'll Build:</h4>
+                <ul>
+                    <li>Multi-broker deployment with replication</li>
+                    <li>Leader election and failover (Raft consensus)</li>
+                    <li>Partition rebalancing across consumers</li>
+                    <li>Network-wide coordination</li>
+                </ul>
+
+                <p><strong>Status:</strong> Coming soon - complete Phase 1 and Phase 2 first!</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2>🚀 Getting Started</h2>
+
+            <h3>Repository Structure</h3>
+            <pre>metricstream/
+├── src/
+│   ├── partitioned_queue.cpp  # Phase 1: File-based queue
+│   └── queue_consumer.cpp     # Phase 1: Consumer
+│
+├── .worktrees/craft-2-phase-11-kafka/  # Phase 2 worktree
+│   ├── include/kafka_producer.h
+│   ├── include/kafka_consumer.h
+│   └── docs/kafka-fix/OVERVIEW.md
+│
+└── craft2/
+    └── README.md              # Full documentation</pre>
+
+            <h3>Building & Running</h3>
+            <pre># Build the server
+mkdir build && cd build
+cmake .. && make
+
+# Run with file-based queue (Phase 1)
+./metricstream_server 8080 file
+
+# Run with Kafka (Phase 2)
+./metricstream_server 8080 kafka
+
+# Run load tests
+./load_test 8080 50 100  # 50 clients, 100 requests each</pre>
+
+            <h3>Documentation</h3>
+            <ul>
+                <li><strong>craft2/README.md:</strong> Full Craft #2 overview with all 3 phases</li>
+                <li><strong>docs/kafka-fix/OVERVIEW.md:</strong> Phase 2 threading bugs deep-dive</li>
+                <li><strong>craft2/phase-1-partitioned-queue/design.md:</strong> Phase 1 design document</li>
+            </ul>
+
+            <a href="index.html" class="back-link">← Back to Systems Craft</a>
+        </div>
+    </div>
+</body>
+</html>

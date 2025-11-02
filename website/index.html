@@ -443,48 +443,47 @@
             </a>
 
             <!-- Craft #2: Distributed Message Queue -->
-            <div class="craft-card future">
+            <a href="craft2.html" class="craft-card">
                 <div class="craft-header">
                     <div class="craft-number">2</div>
                     <div class="craft-title">
                         <h3>Distributed Message Queue</h3>
                     </div>
-                    <span class="craft-status">COMING SOON</span>
+                    <span class="craft-status">IN PROGRESS (2/3 complete!)</span>
                 </div>
 
                 <p class="craft-description">
-                    Build a distributed message queue (like Kafka or Pulsar) that sits between ingestion and storage. Design for high-throughput buffering, implement partitioning for parallelism, and handle message ordering guarantees. Learn how message queues decouple producers from consumers and enable stream processing.
+                    Build a distributed message queue (like Kafka or Pulsar) that sits between ingestion and storage. Compare file-based vs Kafka architectures, understand threading bugs in concurrent systems, and measure the 125x performance improvement from batching and async I/O. Learn why production systems justify the complexity.
                 </p>
 
                 <div class="craft-details">
                     <div class="craft-details-row">
                         <span class="craft-details-label">What you'll build:</span>
-                        <span class="craft-details-value">Topic/partition model, write-ahead log, consumer groups, offset management, replication</span>
+                        <span class="craft-details-value">File-based partitioned queue, Kafka producer/consumer integration, dual-mode architecture, offset management</span>
                     </div>
                     <div class="craft-details-row">
                         <span class="craft-details-label">Systems concepts:</span>
-                        <span class="craft-details-value">Partitioning strategies, message ordering, at-least-once vs exactly-once delivery, leader election</span>
+                        <span class="craft-details-value">Partitioning, message ordering, threading bugs, async I/O, batching, zero-copy transfers</span>
                     </div>
                     <div class="craft-details-row">
-                        <span class="craft-details-label">Target performance:</span>
-                        <span class="craft-details-value">1M+ messages/sec, horizontal scaling, sub-10ms latency</span>
+                        <span class="craft-details-label">Current performance:</span>
+                        <span class="craft-details-value">100,000+ RPS with Kafka (125x faster than file-based!), 0.15ms latency, 97.9% success rate</span>
                     </div>
                 </div>
 
                 <div class="craft-milestones">
                     <h4>📊 Learning Progression:</h4>
                     <ul class="milestone-list">
-                        <li><strong>Phase 1:</strong> Single-partition queue with WAL persistence</li>
-                        <li><strong>Phase 2:</strong> Multi-partition topics for parallelism</li>
-                        <li><strong>Phase 3:</strong> Consumer groups and offset tracking</li>
-                        <li><strong>Phase 4:</strong> Replication and leader election (Raft)</li>
+                        <li><strong>Phase 1:</strong> File-based partitioned queue ✅ COMPLETE (800 RPS, 0.70ms latency)</li>
+                        <li><strong>Phase 2:</strong> Kafka integration & comparison ✅ COMPLETE (100K+ RPS, 0.15ms latency, 4 threading bugs fixed!)</li>
+                        <li><strong>Phase 3:</strong> Distributed coordination (ZooKeeper/Raft) 📝 PLANNED</li>
                     </ul>
                 </div>
 
                 <div class="craft-cta">
-                    Coming Soon
+                    Start Craft #2 →
                 </div>
-            </div>
+            </a>
 
             <!-- Craft #3: Time-Series Storage Engine -->
             <div class="craft-card future">
@@ -621,11 +620,11 @@
 
         <div class="intro-section" style="margin-top: 60px;">
             <h2>🚀 Getting Started</h2>
-            <p>Ready to start? <strong>Craft #0 (coming soon)</strong> will give you a working end-to-end system in an afternoon. Then dive into <strong>Craft #1: Metrics Ingestion System</strong> (available now) to build the first component production-grade. Each craft is self-contained with clear instructions, starter code, and reference implementations.</p>
+            <p>Ready to start? <strong>Craft #0 (available now!)</strong> gives you a working end-to-end system in an afternoon. Then dive into <strong>Craft #1: Metrics Ingestion System</strong> to build the first component production-grade. Each craft is self-contained with clear instructions, starter code, and reference implementations.</p>
 
             <p style="margin-top: 20px;"><strong>Learning Path:</strong></p>
             <ul style="margin-left: 30px; margin-top: 10px; color: #34495e; font-size: 1.05em;">
-                <li><strong>Craft #0:</strong> Build PoC to see the big picture (2-3 hours)</li>
+                <li><strong>Craft #0:</strong> Build complete PoC to see the big picture (2-3 hours) ✅ AVAILABLE</li>
                 <li><strong>Crafts #1-5:</strong> Build each component production-grade (8-12 hours each)</li>
                 <li><strong>Result:</strong> Complete monitoring platform with distributed systems knowledge</li>
             </ul>
