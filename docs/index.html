@@ -56,6 +56,30 @@
             margin: 0 auto;
         }
 
+        .progress-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .progress-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        header {
+            position: relative;
+        }
+
         .intro-section {
             background: white;
             border-radius: 15px;
@@ -314,6 +338,7 @@
 <body>
     <div class="container">
         <header>
+            <a href="progress.html" class="progress-btn">📊 My Progress</a>
             <h1>⚡ Systems Craft</h1>
             <p class="subtitle">Learn Large-Scale Systems Design by Building Real Infrastructure</p>
             <p class="tagline">Hands-on tutorials teaching distributed systems architecture, systems design, and infrastructure engineering by building a complete monitoring platform from scratch</p>
