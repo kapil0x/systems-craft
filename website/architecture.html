@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Explorer - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Architecture Diagram */
+        .architecture-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .component {
+            flex: 1;
+            min-width: 160px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            position: relative;
+        }
+
+        .component:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .component.active {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            box-shadow: 0 15px 40px rgba(243, 156, 18, 0.6);
+        }
+
+        .component-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .component-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .component-subtitle {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #667eea;
+            flex-shrink: 0;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            min-height: 300px;
+            display: none;
+        }
+
+        .detail-panel.visible {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-icon {
+            font-size: 3em;
+        }
+
+        .detail-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .detail-subtitle {
+            font-size: 0.95em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .detail-section p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .bottleneck-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .bottleneck-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+        }
+
+        .bottleneck-list li:before {
+            content: "⚠️";
+            position: absolute;
+            left: 0;
+        }
+
+        .craft-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .craft-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Data Flow Animation */
+        .data-flow {
+            margin: 40px 0;
+            padding: 20px;
+            background: linear-gradient(90deg, #e8f4f8 0%, #f8e8f4 100%);
+            border-radius: 12px;
+            position: relative;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .data-packet {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            position: absolute;
+            animation: flowAcross 8s infinite;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes flowAcross {
+            0% {
+                left: 0;
+                opacity: 1;
+            }
+            100% {
+                left: calc(100% - 30px);
+                opacity: 0;
+            }
+        }
+
+        .data-packet:nth-child(1) { animation-delay: 0s; }
+        .data-packet:nth-child(2) { animation-delay: 2s; }
+        .data-packet:nth-child(3) { animation-delay: 4s; }
+        .data-packet:nth-child(4) { animation-delay: 6s; }
+
+        .flow-label {
+            position: absolute;
+            top: -25px;
+            left: 20px;
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .rps-indicator {
+            position: absolute;
+            bottom: -25px;
+            left: 20px;
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .diagram {
+                flex-direction: column;
+            }
+
+            .arrow {
+                transform: rotate(90deg);
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .legend {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .legend h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-icon {
+            font-size: 1.5em;
+        }
+
+        .legend-text {
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .info-box {
+            background: #d6eaf8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #2c3e50;
+        }
+
+        .info-box strong {
+            color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Systems Craft</a>
+
+        <header>
+            <h1>🏗️ Architecture Explorer</h1>
+            <p>Understand how production systems work. Click each component to learn what it does and why it matters.</p>
+        </header>
+
+        <div class="architecture-container">
+            <!-- Interactive Diagram -->
+            <div style="margin-bottom: 40px;">
+                <h2 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">The Complete Monitoring Platform</h2>
+
+                <!-- Data Flow Visualization -->
+                <div class="data-flow">
+                    <div class="flow-label">Metrics flowing through the system</div>
+                    <div class="data-packet"></div>
+                    <div class="data-packet"></div>
+                    <div class="data-packet"></div>
+                    <div class="data-packet"></div>
+                    <div class="rps-indicator">~200-2k metrics/second</div>
+                </div>
+
+                <!-- Architecture Components -->
+                <div class="diagram">
+                    <!-- Ingestion -->
+                    <div class="component" onclick="showDetail('ingestion')">
+                        <div class="component-icon">📨</div>
+                        <div class="component-name">Ingestion</div>
+                        <div class="component-subtitle">Craft #1</div>
+                    </div>
+
+                    <div class="arrow">→</div>
+
+                    <!-- Message Queue -->
+                    <div class="component" onclick="showDetail('queue')">
+                        <div class="component-icon">📦</div>
+                        <div class="component-name">Message Queue</div>
+                        <div class="component-subtitle">Craft #2</div>
+                    </div>
+
+                    <div class="arrow">→</div>
+
+                    <!-- Storage -->
+                    <div class="component" onclick="showDetail('storage')">
+                        <div class="component-icon">💾</div>
+                        <div class="component-name">Time-Series Storage</div>
+                        <div class="component-subtitle">Craft #3</div>
+                    </div>
+
+                    <div class="arrow">→</div>
+
+                    <!-- Query -->
+                    <div class="component" onclick="showDetail('query')">
+                        <div class="component-icon">🔍</div>
+                        <div class="component-name">Query Engine</div>
+                        <div class="component-subtitle">Craft #4</div>
+                    </div>
+
+                    <div class="arrow">→</div>
+
+                    <!-- Alerting -->
+                    <div class="component" onclick="showDetail('alerting')">
+                        <div class="component-icon">🔔</div>
+                        <div class="component-name">Alerting</div>
+                        <div class="component-subtitle">Craft #5</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingestion Detail Panel -->
+            <div class="detail-panel" id="detail-ingestion">
+                <div class="detail-header">
+                    <div class="detail-icon">📨</div>
+                    <div>
+                        <div class="detail-title">Metrics Ingestion</div>
+                        <div class="detail-subtitle">Craft #1 - 7 optimization phases</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>What It Does</h3>
+                    <p>Receives millions of metrics (CPU, memory, latency) from applications and services. Must handle high concurrency and thousands of requests per second.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Why It Matters</h3>
+                    <p>If ingestion is slow, you can't see what's happening in your systems in real-time. This is the foundation—garbage in, garbage out.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Real Performance Numbers</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Baseline</div>
+                            <div class="metric-value">~50 RPS</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Optimized</div>
+                            <div class="metric-value">~2k RPS</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Improvement</div>
+                            <div class="metric-value">40x</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Common Bottlenecks</h3>
+                    <ul class="bottleneck-list">
+                        <li>Single thread processing (add concurrency)</li>
+                        <li>Synchronous I/O (add async I/O)</li>
+                        <li>Inefficient JSON parsing (optimize parser)</li>
+                        <li>Global locks on shared data (per-partition locking)</li>
+                        <li>Memory allocations (use ring buffers)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Pro Tip:</strong> Start by measuring baseline performance. You can't optimize what you don't measure. Use the benchmark tool to track improvements as you implement each phase.
+                </div>
+
+                <a href="craft1.html" class="craft-link">Start Craft #1 →</a>
+            </div>
+
+            <!-- Queue Detail Panel -->
+            <div class="detail-panel" id="detail-queue">
+                <div class="detail-header">
+                    <div class="detail-icon">📦</div>
+                    <div>
+                        <div class="detail-title">Message Queue (Buffer)</div>
+                        <div class="detail-subtitle">Craft #2 - Distributed messaging</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>What It Does</h3>
+                    <p>Buffers metrics between ingestion and storage. Decouples producers (ingestion) from consumers (storage), allowing independent scaling and reliability.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Why It Matters</h3>
+                    <p>Storage might be slow or temporarily unavailable. A queue absorbs this variance, preventing data loss and allowing systems to scale independently. Netflix/Uber/Google all use this pattern.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Real Performance Numbers</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">File-Based</div>
+                            <div class="metric-value">~200 RPS</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Kafka</div>
+                            <div class="metric-value">~200 RPS</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Latency Gain</div>
+                            <div class="metric-value">4.6x faster</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Key Concepts</h3>
+                    <ul class="bottleneck-list">
+                        <li>Partitioning (scale writes across multiple partitions)</li>
+                        <li>Consumer groups (multiple workers process same queue)</li>
+                        <li>Offset tracking (exactly-once delivery semantics)</li>
+                        <li>Replication (durability across machines)</li>
+                        <li>Leader election (fault tolerance)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Learning Path:</strong> Start with file-based queue (Phase 1), then Kafka comparison (Phase 2), then distributed coordination (Phase 3).
+                </div>
+
+                <a href="craft2.html" class="craft-link">Start Craft #2 →</a>
+            </div>
+
+            <!-- Storage Detail Panel -->
+            <div class="detail-panel" id="detail-storage">
+                <div class="detail-header">
+                    <div class="detail-icon">💾</div>
+                    <div>
+                        <div class="detail-title">Time-Series Storage Engine</div>
+                        <div class="detail-subtitle">Craft #3 - Optimized for metrics</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>What It Does</h3>
+                    <p>Stores time-series metrics in an optimized format. Most metrics have predictable access patterns (recent data accessed frequently, old data rarely).</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Why It Matters</h3>
+                    <p>A general database is slow for metrics. Specialized engines (InfluxDB, Prometheus) use compression, time-based indexing, and column-oriented storage to achieve 10-100x better performance.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Real Performance Numbers</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Write Throughput</div>
+                            <div class="metric-value">1M+/sec</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Compression</div>
+                            <div class="metric-value">10-100x</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Query Speed</div>
+                            <div class="metric-value">&lt;1 second</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Key Concepts</h3>
+                    <ul class="bottleneck-list">
+                        <li>Time-based partitioning (by hour/day)</li>
+                        <li>Compression algorithms (delta encoding, dictionary)</li>
+                        <li>Column-oriented storage (compress similar values)</li>
+                        <li>Bloom filters (quick negative lookups)</li>
+                        <li>Write-optimized structures (LSM trees)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Expected Outcome:</strong> By optimizing storage, you'll dramatically reduce disk usage (10GB → 100MB for same data) and query latency.
+                </div>
+
+                <a href="#" class="craft-link" style="opacity: 0.6; cursor: not-allowed;">Craft #3 Coming Soon</a>
+            </div>
+
+            <!-- Query Detail Panel -->
+            <div class="detail-panel" id="detail-query">
+                <div class="detail-header">
+                    <div class="detail-icon">🔍</div>
+                    <div>
+                        <div class="detail-title">Query & Aggregation Engine</div>
+                        <div class="detail-subtitle">Craft #4 - PromQL-like language</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>What It Does</h3>
+                    <p>Lets users query metrics with a domain-specific language. Examples: "Show me CPU usage over last hour" or "Calculate 95th percentile latency grouped by service".</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Why It Matters</h3>
+                    <p>Raw metrics aren't useful. Engineers need to query, aggregate, downsample, and combine metrics to understand system health. This is where insights happen.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Real Performance Numbers</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Query Latency</div>
+                            <div class="metric-value">&lt;1 second</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">24h Range</div>
+                            <div class="metric-value">1 billion points</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Throughput</div>
+                            <div class="metric-value">1k queries/sec</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Key Concepts</h3>
+                    <ul class="bottleneck-list">
+                        <li>Query planning (optimize which data to scan)</li>
+                        <li>Aggregation functions (sum, avg, percentile, etc)</li>
+                        <li>Time-based filtering (range queries)</li>
+                        <li>Downsampling (reduce data for visualization)</li>
+                        <li>Caching (memoize common queries)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Real-World Usage:</strong> Used by monitoring dashboards (Grafana) and alerting systems. Query performance directly impacts how quickly engineers can respond to issues.
+                </div>
+
+                <a href="#" class="craft-link" style="opacity: 0.6; cursor: not-allowed;">Craft #4 Coming Soon</a>
+            </div>
+
+            <!-- Alerting Detail Panel -->
+            <div class="detail-panel" id="detail-alerting">
+                <div class="detail-header">
+                    <div class="detail-icon">🔔</div>
+                    <div>
+                        <div class="detail-title">Alerting System</div>
+                        <div class="detail-subtitle">Craft #5 - PagerDuty-like automation</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>What It Does</h3>
+                    <p>Continuously evaluates rules against metrics. When a condition is met (CPU > 80%, error rate spike, etc), triggers actions: page engineers, create tickets, post to Slack.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Why It Matters</h3>
+                    <p>Humans can't watch dashboards 24/7. Alerts ensure someone gets notified immediately when something goes wrong. Response time = business impact.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Real Performance Numbers</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Detection Latency</div>
+                            <div class="metric-value">&lt;1 minute</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Rules Evaluated</div>
+                            <div class="metric-value">100k+/sec</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Notification Delivery</div>
+                            <div class="metric-value">&lt;10 seconds</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Key Concepts</h3>
+                    <ul class="bottleneck-list">
+                        <li>Rule engine (evaluate conditions efficiently)</li>
+                        <li>State machine (track alert states: firing → resolved)</li>
+                        <li>Deduplication (don't spam duplicate alerts)</li>
+                        <li>Escalation policies (who to notify when)</li>
+                        <li>Integrations (Slack, PagerDuty, email, webhooks)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Impact:</strong> A 1-minute faster detection can mean millions of dollars saved in cloud costs or prevented outages. This is why companies invest heavily in alerting infrastructure.
+                </div>
+
+                <a href="#" class="craft-link" style="opacity: 0.6; cursor: not-allowed;">Craft #5 Coming Soon</a>
+            </div>
+
+            <!-- Legend -->
+            <div class="legend">
+                <h3>How to Use This Explorer</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-icon">👆</div>
+                        <div class="legend-text"><strong>Click any component</strong> to learn what it does, why it matters, and real numbers</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon">📊</div>
+                        <div class="legend-text"><strong>See real performance metrics</strong> from production systems and optimizations</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon">🚀</div>
+                        <div class="legend-text"><strong>Link to specific crafts</strong> to build and optimize each component</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon">⚠️</div>
+                        <div class="legend-text"><strong>Common bottlenecks</strong> show you where optimization effort matters most</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div style="background: white; border-radius: 15px; padding: 40px; margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+            <h2 style="color: #2c3e50; margin-bottom: 20px;">Ready to Build?</h2>
+            <p style="color: #555; margin-bottom: 30px; font-size: 1.1em;">
+                Start with Craft #1 to optimize metrics ingestion. Get a 40x performance improvement by the end.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="craft1.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+                    🚀 Start Craft #1
+                </a>
+                <a href="benchmark.html" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(243, 156, 18, 0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+                    📈 Run Benchmark
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Track which detail panel is currently shown
+        let activeDetail = null;
+
+        function showDetail(componentId) {
+            // Hide all panels
+            document.querySelectorAll('.detail-panel').forEach(panel => {
+                panel.classList.remove('visible');
+            });
+
+            // Remove active state from all components
+            document.querySelectorAll('.component').forEach(comp => {
+                comp.classList.remove('active');
+            });
+
+            // Show selected panel
+            const panelId = 'detail-' + componentId;
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.add('visible');
+
+                // Highlight active component
+                event.target.closest('.component').classList.add('active');
+
+                // Scroll to detail panel
+                setTimeout(() => {
+                    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+
+            activeDetail = componentId;
+            console.log('Showing detail:', componentId);
+        }
+
+        // Show first component on load
+        window.addEventListener('load', () => {
+            console.log('Architecture explorer loaded');
+            // Optional: auto-show first component
+            // showDetail('ingestion');
+        });
+    </script>
+</body>
+</html>
