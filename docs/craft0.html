@@ -377,21 +377,34 @@
         <div class="content-section">
             <h2>🚀 Getting Started</h2>
 
-            <h3>1. Build</h3>
-            <div class="code-block">cd phase0
-./build.sh</div>
+            <div class="highlight-box" style="background: linear-gradient(135deg, #d5f4e6 0%, #e8f5e9 100%); border-left: 6px solid #27ae60;">
+                <h3 style="color: #2c3e50; margin-top: 0;">🐳 Fastest Way: Docker (30 Seconds)</h3>
+                <p style="color: #555; font-size: 1.05em;"><strong>No compiler needed. No dependencies.</strong> Get the complete system running instantly:</p>
+                <div class="code-block" style="background: #2c3e50; color: #27ae60; margin: 20px 0;">git clone https://github.com/kapil0x/systems-craft.git
+cd systems-craft
+docker-compose up
 
-            <h3>2. Run Server</h3>
-            <div class="code-block">cd build
-./phase0_poc</div>
-
-            <p>You should see all 5 components start:</p>
-            <div class="code-block">[Storage] Consumer started, writing to phase0_metrics.jsonl
+# ✅ Server running on http://localhost:8080</div>
+                <p style="color: #555;">You should see all 5 components start:</p>
+                <div class="code-block">[Storage] Consumer started, writing to phase0_metrics.jsonl
 [Alerting] Added rule: cpu_usage > 80 (window: 60s)
 [Alerting] Engine started, checking every 10 seconds
 [Ingestion] Server started on port 8080</div>
+                <p style="color: #555; font-size: 0.95em; margin-top: 15px;">📖 <a href="https://github.com/kapil0x/systems-craft/blob/main/DOCKER_QUICKSTART.md" style="color: #27ae60; font-weight: 600;">Full Docker Guide →</a></p>
+            </div>
 
-            <h3>3. Test It</h3>
+            <h3 style="margin-top: 40px;">Alternative: Build from Source</h3>
+            <p style="color: #777; font-size: 0.95em;">If you want to compile manually (requires g++ and CMake):</p>
+
+            <h4>1. Build</h4>
+            <div class="code-block">cd phase0
+./build.sh</div>
+
+            <h4>2. Run Server</h4>
+            <div class="code-block">cd build
+./phase0_poc</div>
+
+            <h3 style="margin-top: 30px;">3. Test It</h3>
             <p>Open another terminal and send a metric:</p>
             <div class="code-block">curl -X POST http://localhost:8080/metrics \
      -H "Content-Type: application/json" \
