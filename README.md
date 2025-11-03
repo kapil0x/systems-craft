@@ -6,6 +6,24 @@ Why a complete monitoring platform? Because it forces you to learn everything: *
 
 > **The Future of Engineering:** Learn to design distributed systems AND coordinate AI agents to build them—practicing the exact skills you'll need when every engineer manages teams of AI.
 
+## 🚀 Fastest Way to Start (30 Seconds with Docker)
+
+**No C++ compiler needed. No dependencies. Just run:**
+
+```bash
+# Start the complete monitoring platform
+docker-compose up
+
+# Server running on http://localhost:8080
+# Open website/benchmark.html to test performance
+```
+
+That's it! You now have a working monitoring system. See [DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md) for details.
+
+**Next:** Open `website/architecture.html` to understand what you just ran, then start optimizing with Craft #1.
+
+---
+
 ## 🎯 Learning Path
 
 ### **Start Here: Craft #0 (2-3 hours)** ✅
