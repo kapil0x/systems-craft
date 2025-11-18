@@ -42,7 +42,7 @@
 
 ## Feature Development Workflow (MANDATORY)
 
-**Branch protection is enabled. All changes MUST go through PR workflow.**
+**⚠️ Branch protection is strictly enforced. All changes MUST go through PR workflow - no exceptions, even for admins!**
 
 ### Starting a New Feature
 ```bash
