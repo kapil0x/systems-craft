@@ -289,7 +289,50 @@ When working on this project with superpowers/skills active, **ALWAYS** use thes
 - **Must be in .gitignore**: YES - the using-git-worktrees skill will verify and add if missing
 - **Never create worktrees manually** - always use the skill or `/worktree` slash command
 
-## Current Focus
+## Current Status (Last Updated: Dec 21, 2025)
 
-Phase 4: Hash-based per-client mutex optimization to eliminate double mutex bottleneck in rate limiting. See TODO(human) in `flush_metrics()` for contribution opportunity.
-- Our goal is to build a  realtime montoting system as well a learning system for engineers to learn how we build the system phase by phase. They should be able to start from the begining and move from phase 0 to final system. They would get opportunity to run labs for each phase/chapters, test it, performance test it.
+### Completed Work
+- **Craft #1 (Ingestion):** ✅ Complete - 2,253 RPS through 7 optimization phases
+- **Craft #2 Phase 1 (File-based Queue):** ✅ Complete - 800 RPS, 98.7% success
+- **Craft #2 Phase 2 (Kafka Integration):** ✅ Complete - Thread-safe, 0.15ms latency, 4 critical bugs fixed
+  - Verified: 20 concurrent clients × 200 requests = 100% success
+  - Architecture: Dual-mode (file vs Kafka), Strategy Pattern
+  - Learning: Threading challenges with librdkafka, mutex synchronization
+
+### Current Phase
+- **Craft #2 Phase 3 (Distributed Coordination):** 📝 Design Complete
+  - See: `craft2/phase-3-distributed-coordination/DESIGN.md`
+  - Status: Ready to implement (not yet started)
+  - Approach: Docker Compose or AWS for multi-broker testing
+  - Learning focus: Rebalancing, failover, partition leadership
+
+### Documentation Status
+- **README.md:** Updated with verified performance (no more unsubstantiated claims)
+- **craft2/README.md:** Honest about tested vs. untested features
+- **Website:** Synced with actual measured results
+- **Phase 3 design:** Comprehensive roadmap with 3 implementation options
+
+### Next Steps (When Resuming)
+
+1. **Choose Phase 3 implementation approach:**
+   - Docker Compose (free, 15 min setup)
+   - AWS EC2 (realistic, costs $20-30/mo)
+   - Confluent Cloud (managed, free tier available)
+
+2. **Or: Move to Craft #3 (Time-Series Storage)**
+   - See: `craft3/` directory
+   - Implements InfluxDB-like storage
+   - LSM tree, Gorilla compression, time-range queries
+
+3. **Update CLAUDE.md again** when next phase is started
+
+### Project Vision
+A hands-on tutorial for building a monitoring platform from scratch. Engineers learn by building each component (Craft #1-5), measuring performance, and understanding tradeoffs. Not just theory—real systems, real measurements, real challenges.
+
+**Phases:**
+- Craft #0: Complete PoC (5 components, 600 lines)
+- Craft #1: Ingestion optimization (2,253 RPS) ✅
+- Craft #2: Message queue (Phase 1-2 ✅, Phase 3 📝)
+- Craft #3: Time-series storage (planned)
+- Craft #4: Query engine (planned)
+- Craft #5: Alerting (planned)
