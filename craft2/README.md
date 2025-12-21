@@ -143,12 +143,30 @@ Kafka       | ✅ Thread-safe verified | 0.15ms  | 97.9%   | 4.6x latency improv
 
 ### Phase 3: Distributed Coordination 📝
 
-**Documentation:** *(to be created)*
+**Documentation:** [phase-3-distributed-coordination/DESIGN.md](phase-3-distributed-coordination/DESIGN.md)
 
-**Goal:** Scale beyond single machine using ZooKeeper/Raft for distributed consensus
+**Goal:** Understand multi-broker coordination, consumer group rebalancing, and failure modes
 
-**Time:** 4-5 hours
-**Status:** 📝 Planned
+**Time:** 6-8 hours (when ready to implement)
+**Status:** 📝 Design Complete - Ready for Future Implementation
+
+**Learning focus:**
+- Multi-broker Kafka cluster (ZooKeeper coordination)
+- Consumer group rebalancing on broker failures
+- Partition leadership election
+- Replication durability vs. latency trade-off
+- Realistic throughput measurement (scales with partitions)
+
+**Implementation options:**
+1. **Docker Compose** (free, localhost) - for learning architecture
+2. **AWS EC2** (paid, realistic) - for production-like networking
+3. **Confluent Cloud** (managed) - no infrastructure overhead
+
+**Key simulation scenarios:**
+- Single broker failure → automatic failover
+- Cascading failures → single point of failure risk
+- Consumer rebalancing → partition reassignment across machines
+- Throughput scaling → 6 partitions = ~6x throughput vs single broker
 
 ---
 
