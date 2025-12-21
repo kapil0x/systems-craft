@@ -111,19 +111,26 @@ Ingestion → [Queue] → Consumer Group (multi-machine)
   4. Message lifetime issues with async sends
 
 **Performance:**
-- **Throughput:** 100,000+ RPS (verified under concurrent load)
-- **Latency:** ~0.15ms avg (same as file-based, network overhead negligible)
-- **Success Rate:** 97.9% @ concurrent load
-- **Scalability:** Horizontally scales across machines with proper infrastructure
+- **Throughput:** Kafka scales to 100K+ RPS (librdkafka capability, full benchmark pending)
+- **Latency:** ~0.15ms avg (measured, network overhead negligible vs file-based)
+- **Success Rate:** 97.9% @ concurrent load testing
+- **Concurrency:** Verified thread-safe under 16 concurrent worker threads
+- **Scalability:** Designed for horizontal scaling across machines
 
-**Key Learning:** Kafka delivers 125x throughput improvement over file-based queues. The latency is similar because network latency to local Kafka is minimal. Kafka's power comes from batching, replication, and horizontal scaling - not from raw latency improvements.
+**Verification:**
+- ✅ Thread-safe mutex protection prevents race conditions
+- ✅ Concurrent load test (20 clients) succeeds 100%
+- ✅ Single requests verified end-to-end (curl → Kafka → consumer)
+- ⏳ Full RPS benchmark (100K+) needs systematic load testing (future phase)
+
+**Key Learning:** Kafka's architecture supports massive throughput via batching, replication, and partitioning. This implementation demonstrates the core threading and concurrency challenges. Production performance depends on proper broker configuration, hardware, and network setup.
 
 **Comparison Results (Phase 11 Verified):**
 ```
-Mode        | RPS         | Latency | Success | Key Benefit
-------------|-------------|---------|---------|---------------------------------------
-File-based  | 800         | 0.70ms  | 98.7%   | Simple, durable, single-machine
-Kafka       | 100,000+    | 0.15ms  | 97.9%   | 125x throughput! Distributed, scalable
+Mode        | Status                  | Latency | Success | Key Learning
+------------|-------------------------|---------|---------|---------------------------------------
+File-based  | ✅ 800 RPS measured     | 0.70ms  | 98.7%   | Simple, durable, single-machine
+Kafka       | ✅ Thread-safe verified | 0.15ms  | 97.9%   | 4.6x latency improvement, architecture proven
 ```
 
 **Threading Insights:**

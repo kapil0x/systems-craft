@@ -178,6 +178,782 @@ t=30s ⚠️ timeout → rebalance triggered
 
 ## File-Based Coordination Design
 
+### Big Picture: How Everything Works Together
+
+Before diving into file formats and rebalancing, let's see **how consumers coordinate** to process messages from a queue.
+
+**Simple Scenario:** 3 consumer processes sharing work from 4 queue partitions.
+
+---
+
+#### Setup: Messages Waiting in Queue
+
+```
+queue/
+├── partition-0/  (150 messages waiting)
+│   ├── 00000000000000001.msg
+│   ├── 00000000000000002.msg
+│   └── ... (148 more)
+│
+├── partition-1/  (150 messages waiting)
+│   ├── 00000000000000001.msg
+│   ├── 00000000000000002.msg
+│   └── ... (148 more)
+│
+├── partition-2/  (150 messages waiting)
+└── partition-3/  (150 messages waiting)
+
+Total: 600 messages to process
+```
+
+---
+
+#### Consumer Coordination via Files
+
+**Consumer Group:** `metrics-processors`
+
+**File System State:**
+```
+consumer-groups/metrics-processors/
+├── coordinator.lock              (empty file, not locked)
+├── generation.txt                → 12
+├── members/
+│   ├── consumer-a-7001.json      → {consumer_id, hostname, joined_at}
+│   ├── consumer-b-7002.json
+│   └── consumer-c-7003.json
+├── assignments.json              → {generation: 12, assignments: {A: [0,1], B: [2], C: [3]}}
+└── offsets/
+    ├── partition-0.offset        → 0 (start from beginning)
+    ├── partition-1.offset        → 0
+    ├── partition-2.offset        → 0
+    └── partition-3.offset        → 0
+
+.coordinator/heartbeats/
+├── consumer-a-7001.heartbeat     → {timestamp: recent, generation: 12}
+├── consumer-b-7002.heartbeat     → {timestamp: recent, generation: 12}
+└── consumer-c-7003.heartbeat     → {timestamp: recent, generation: 12}
+```
+
+**Partition Assignment:**
+```
+P0 → Consumer A
+P1 → Consumer A
+P2 → Consumer B
+P3 → Consumer C
+```
+
+---
+
+#### How Consumers Process (Simplified)
+
+**Consumer A** (processes P0, P1):
+
+```cpp
+// Main loop
+while (running_) {
+    // 1. Check for rebalance (reads generation.txt every 100ms)
+    if (read_generation() != my_generation_) {
+        rebalance();  // Stop, rejoin group
+    }
+
+    // 2. Read next message from assigned partitions
+    for (int p : my_partitions_) {  // [0, 1]
+        auto msg = read_next_message(p);
+        if (msg) {
+            process(msg);  // Business logic
+            commit_offset_periodically(p, msg->offset);
+        }
+    }
+
+    // 3. Send heartbeat every 5s (background thread)
+    update_heartbeat_file();
+
+    // 4. Check if other consumers are alive every 10s
+    check_other_heartbeats();
+}
+```
+
+**Key Points:**
+1. **Reads `assignments.json` on startup** → knows to process P0, P1
+2. **Reads `offsets/*.offset`** → knows where to resume (offset 0)
+3. **Writes `offsets/*.offset`** → saves progress after processing
+4. **Reads `generation.txt` frequently** → detects if rebalance happening
+5. **Writes `heartbeats/*.heartbeat`** → proves it's alive
+6. **Reads `heartbeats/*.heartbeat`** → monitors other consumers
+
+**Consumer B** and **Consumer C** do the exact same thing with their assigned partitions.
+
+---
+
+#### File Usage Summary
+
+| File | Who Reads? | Who Writes? | When? | Why? |
+|------|-----------|-------------|--------|------|
+| `coordinator.lock` | All consumers | First to rebalance | During rebalance | Prevent concurrent rebalancing |
+| `generation.txt` | All consumers (every 100ms) | Rebalance initiator | On membership change | Version fence to detect changes |
+| `members/*.json` | All consumers (startup) | Each consumer | Join/leave | Track who's in the group |
+| `assignments.json` | All consumers (startup + rebalance) | Rebalance initiator | On membership change | Define partition ownership |
+| `offsets/*.offset` | Owning consumer (startup) | Owning consumer (periodic) | Every N messages | Track processing progress |
+| `heartbeats/*.heartbeat` | All consumers (every 10s) | Each consumer (every 5s) | Continuously | Prove liveness |
+
+---
+
+#### Example Processing Timeline
+
+**T=0s:** All consumers start
+
+```
+Consumer A:
+  - Reads assignments.json → learns it owns [P0, P1]
+  - Reads offset files → P0@0, P1@0
+  - Starts processing P0 message 1, P1 message 1
+
+Consumer B:
+  - Reads assignments.json → learns it owns [P2]
+  - Reads offset files → P2@0
+  - Starts processing P2 message 1
+
+Consumer C:
+  - Reads assignments.json → learns it owns [P3]
+  - Reads offset files → P3@0
+  - Starts processing P3 message 1
+```
+
+**T=5s:** Processing continues, heartbeats sent
+
+```
+Consumer A processed 50 messages (P0: 1-25, P1: 1-25)
+  - Writes offsets/partition-0.offset → 25
+  - Writes offsets/partition-1.offset → 25
+  - Writes heartbeats/consumer-a-7001.heartbeat → {timestamp: T=5s}
+
+Consumer B processed 25 messages (P2: 1-25)
+  - Writes offsets/partition-2.offset → 25
+  - Writes heartbeats/consumer-b-7002.heartbeat → {timestamp: T=5s}
+
+Consumer C processed 25 messages (P3: 1-25)
+  - Writes offsets/partition-3.offset → 25
+  - Writes heartbeats/consumer-c-7003.heartbeat → {timestamp: T=5s}
+```
+
+**T=10s:** All consumers check heartbeats
+
+```
+Consumer A checks:
+  - Reads heartbeats/consumer-b-7002.heartbeat → timestamp T=5s (5s ago) ✓ healthy
+  - Reads heartbeats/consumer-c-7003.heartbeat → timestamp T=5s (5s ago) ✓ healthy
+  → All good, continue processing
+
+Consumer B and C do the same → all healthy
+```
+
+**T=20s:** Processing complete
+
+```
+Final offsets:
+  partition-0.offset → 150 (Consumer A)
+  partition-1.offset → 150 (Consumer A)
+  partition-2.offset → 150 (Consumer B)
+  partition-3.offset → 150 (Consumer C)
+
+Total processed: 600 messages
+Distribution:
+  Consumer A: 300 messages (50%) - owns 2 partitions
+  Consumer B: 150 messages (25%) - owns 1 partition
+  Consumer C: 150 messages (25%) - owns 1 partition
+```
+
+---
+
+#### What the 5 Files Achieve
+
+**Without coordination files**, you'd need:
+- Dedicated coordinator process (single point of failure)
+- Network protocol for communication
+- Complex leader election
+- Distributed locks
+
+**With file-based coordination:**
+- ✅ Decentralized (any consumer can trigger rebalance)
+- ✅ Simple (just file I/O, no network protocol)
+- ✅ Durable (crashes don't lose state)
+- ✅ Observable (can `cat` files to debug)
+- ❌ Single-machine only (files don't work across network)
+
+---
+
+**Next:** See what happens when consumers join/crash (rebalancing)
+
+---
+
+### Real-World Example: Complete Rebalancing Scenario
+
+Now that you've seen the system in steady state, let's walk through a **complete rebalancing scenario** to see how all 5 coordination files work together when membership changes.
+
+**Scenario:** Analytics team running metric processing with a consumer group called `analytics-workers`. We'll watch what happens when:
+1. System starts with 2 consumers
+2. A 3rd consumer joins (rebalance triggered)
+3. One consumer crashes (rebalance triggered again)
+
+---
+
+#### Initial State: 2 Consumers Processing 4 Partitions
+
+**Consumer Group:** `analytics-workers`
+**Partitions:** 4 (P0, P1, P2, P3)
+**Consumers:**
+- `consumer-alice-1001` on host `worker-node-1`
+- `consumer-bob-2002` on host `worker-node-1`
+
+**File System State:**
+```
+consumer-groups/analytics-workers/
+├── coordinator.lock              (empty file, not held)
+├── generation.txt                3
+├── members/
+│   ├── consumer-alice-1001.json  (joined 5 minutes ago)
+│   └── consumer-bob-2002.json    (joined 5 minutes ago)
+├── assignments.json
+│   {
+│     "generation": 3,
+│     "timestamp": "2025-11-03T10:00:00Z",
+│     "assignments": {
+│       "consumer-alice-1001": [0, 1],
+│       "consumer-bob-2002": [2, 3]
+│     }
+│   }
+└── offsets/
+    ├── partition-0.offset        12450
+    ├── partition-1.offset        12389
+    ├── partition-2.offset        12501
+    └── partition-3.offset        12478
+
+.coordinator/heartbeats/
+├── consumer-alice-1001.heartbeat
+│   {
+│     "consumer_id": "consumer-alice-1001",
+│     "timestamp": "2025-11-03T10:05:23.145Z",  ← 2 seconds ago
+│     "generation": 3
+│   }
+└── consumer-bob-2002.heartbeat
+    {
+      "consumer_id": "consumer-bob-2002",
+      "timestamp": "2025-11-03T10:05:24.891Z",  ← 1 second ago
+      "generation": 3
+    }
+```
+
+**System Behavior:**
+- Alice processes partitions P0, P1 (consuming at offset 12450, 12389)
+- Bob processes partitions P2, P3 (consuming at offset 12501, 12478)
+- Both send heartbeats every 5 seconds
+- No coordinator lock held (steady state)
+
+---
+
+#### Event 1: New Consumer Joins (T+0s)
+
+Charlie starts a new consumer process to help with the load.
+
+**Timeline:**
+
+**T+0.000s - Charlie acquires coordinator lock**
+```bash
+# Charlie's process executes:
+int lock_fd = open("consumer-groups/analytics-workers/coordinator.lock", O_RDWR | O_CREAT);
+flock(lock_fd, LOCK_EX);  # BLOCKS until acquired (no one holds it, so immediate)
+```
+
+**File Change:**
+```
+coordinator.lock  (Charlie holds exclusive lock - no file content change, kernel tracks owner)
+```
+
+**T+0.050s - Charlie reads current state**
+```cpp
+// Charlie reads membership
+members = list_files("consumer-groups/analytics-workers/members/");
+// Returns: ["consumer-alice-1001.json", "consumer-bob-2002.json"]
+
+// Charlie reads current generation
+generation = read_file("consumer-groups/analytics-workers/generation.txt");
+// Returns: 3
+
+// Charlie reads current assignments
+assignments = read_json("consumer-groups/analytics-workers/assignments.json");
+// Returns: {alice: [0,1], bob: [2,3]}
+```
+
+**T+0.100s - Charlie writes own membership file**
+```cpp
+write_json("consumer-groups/analytics-workers/members/consumer-charlie-3003.json", {
+  "consumer_id": "consumer-charlie-3003",
+  "process_id": 3003,
+  "hostname": "worker-node-1",
+  "joined_at": "2025-11-03T10:05:25.100Z",
+  "client_metadata": {"version": "1.0.0"}
+});
+```
+
+**File Change:**
+```
+members/
+├── consumer-alice-1001.json
+├── consumer-bob-2002.json
+└── consumer-charlie-3003.json  ← NEW
+```
+
+**T+0.150s - Charlie increments generation**
+```cpp
+int new_generation = generation + 1;  // 3 → 4
+write_file("consumer-groups/analytics-workers/generation.txt", "4");
+```
+
+**File Change:**
+```
+generation.txt: 3 → 4  ← REBALANCE TRIGGER!
+```
+
+**T+0.200s - Charlie computes new assignment**
+```cpp
+// Get all members
+members = ["consumer-alice-1001", "consumer-bob-2002", "consumer-charlie-3003"];
+
+// Use RoundRobinAssignor
+RoundRobinAssignor assignor;
+new_assignments = assignor.assign(members, 4);
+
+// Result:
+// consumer-alice-1001:   [0]     (lost P1)
+// consumer-bob-2002:     [1]     (lost P2, P3, gained P1)
+// consumer-charlie-3003: [2, 3]  (gained P2, P3)
+```
+
+**T+0.250s - Charlie writes new assignments**
+```cpp
+write_json("consumer-groups/analytics-workers/assignments.json", {
+  "generation": 4,
+  "timestamp": "2025-11-03T10:05:25.250Z",
+  "assignments": {
+    "consumer-alice-1001": [0],
+    "consumer-bob-2002": [1],
+    "consumer-charlie-3003": [2, 3]
+  }
+});
+```
+
+**File Change:**
+```
+assignments.json:
+  generation: 3 → 4
+  assignments:
+    alice: [0, 1] → [0]
+    bob:   [2, 3] → [1]
+    charlie: (none) → [2, 3]
+```
+
+**T+0.300s - Charlie releases lock and starts consuming**
+```cpp
+flock(lock_fd, LOCK_UN);
+close(lock_fd);
+
+// Charlie starts heartbeat thread
+start_heartbeat_thread();
+
+// Charlie loads offsets for P2, P3
+offset_p2 = read_file("consumer-groups/analytics-workers/offsets/partition-2.offset");
+offset_p3 = read_file("consumer-groups/analytics-workers/offsets/partition-3.offset");
+// Returns: 12501, 12478
+
+// Charlie starts consuming from P2@12502, P3@12479
+```
+
+**Charlie's heartbeat file created:**
+```
+.coordinator/heartbeats/consumer-charlie-3003.heartbeat
+{
+  "consumer_id": "consumer-charlie-3003",
+  "timestamp": "2025-11-03T10:05:25.300Z",
+  "generation": 4
+}
+```
+
+---
+
+#### Concurrent Event: Alice and Bob Detect Rebalance (T+0.100s - T+0.500s)
+
+While Charlie is writing files, Alice and Bob are still processing messages. Here's what happens in their main loops:
+
+**Alice's Thread (every 100ms check):**
+
+**T+0.120s - Alice detects generation change**
+```cpp
+// Alice's main consumption loop
+while (running_) {
+    // Check generation before processing next batch
+    int current_gen = read_file("consumer-groups/analytics-workers/generation.txt");
+    // Reads: 4 (was 3 in memory)
+
+    if (current_gen != my_generation_) {
+        std::cout << "Rebalance detected! Gen 3 → 4\n";
+        on_rebalance_triggered();
+        break;
+    }
+
+    // (would process messages here, but rebalance detected)
+}
+```
+
+**T+0.150s - Alice commits current offsets for P0, P1**
+```cpp
+void on_rebalance_triggered() {
+    // Stop consuming
+    pause_consumption();
+
+    // Commit current progress
+    commit_offset(0, 12455);  // Processed 5 more messages on P0
+    commit_offset(1, 12392);  // Processed 3 more messages on P1
+}
+```
+
+**File Changes:**
+```
+offsets/partition-0.offset: 12450 → 12455
+offsets/partition-1.offset: 12389 → 12392
+```
+
+**T+0.400s - Alice tries to acquire lock to read new assignment**
+```cpp
+void rejoin_group() {
+    int lock_fd = open("coordinator.lock", O_RDWR);
+    flock(lock_fd, LOCK_EX);  // BLOCKS - Charlie still holds it until T+0.300s
+
+    // Lock acquired at T+0.400s (Charlie released at T+0.300s, Bob might race here)
+
+    // Read new assignment
+    assignments = read_json("assignments.json");
+    my_partitions_ = assignments["consumer-alice-1001"];  // [0]
+    my_generation_ = assignments["generation"];  // 4
+
+    flock(lock_fd, LOCK_UN);
+    close(lock_fd);
+}
+```
+
+**T+0.450s - Alice resumes with new assignment**
+```cpp
+std::cout << "Rejoined group (gen=4) with partitions: P0\n";
+
+// Load offset for P0 (still owns this)
+offset_p0 = read_file("offsets/partition-0.offset");  // 12455
+
+// Resume consuming P0 from 12456
+// No longer consuming P1 (Bob owns it now)
+resume_consumption();
+```
+
+**Bob's Experience (similar timeline, slight race with Alice):**
+
+**T+0.130s** - Detects generation 4
+**T+0.160s** - Commits offsets for P2 (12506), P3 (12481)
+**T+0.350s** - Tries to acquire lock (Charlie still holds) - BLOCKS
+**T+0.420s** - Acquires lock (after Alice releases at T+0.410s)
+**T+0.450s** - Reads new assignment: P1 only
+**T+0.480s** - Loads offset for P1 (12392, Alice's last commit)
+**T+0.500s** - Starts consuming P1 from 12393
+
+---
+
+#### Final State After Rebalance (T+0.500s)
+
+**System State:**
+```
+Generation: 4
+Members: 3 (Alice, Bob, Charlie)
+
+Partition Assignment:
+  P0 → Alice   (was Alice, no change)
+  P1 → Bob     (was Alice, moved to Bob)
+  P2 → Charlie (was Bob, moved to Charlie)
+  P3 → Charlie (was Bob, moved to Charlie)
+
+Consumption Status:
+  Alice:   P0 @ offset 12456  (consuming)
+  Bob:     P1 @ offset 12393  (consuming, took over from Alice)
+  Charlie: P2 @ offset 12502, P3 @ offset 12479  (consuming, took over from Bob)
+
+Heartbeats:
+  consumer-alice-1001.heartbeat   - generation: 4, timestamp: every 5s
+  consumer-bob-2002.heartbeat     - generation: 4, timestamp: every 5s
+  consumer-charlie-3003.heartbeat - generation: 4, timestamp: every 5s
+```
+
+**Rebalance Impact:**
+- **Duration:** ~400ms from first generation change to all consumers resumed
+- **Message Gap:** ~40 messages buffered during rebalance (at 100 msg/sec rate)
+- **Partition Handoff:** P1 moved from Alice to Bob, P2/P3 moved from Bob to Charlie
+- **No Data Loss:** All offsets committed before handoff
+
+---
+
+#### Event 2: Bob Crashes (T+60s)
+
+One minute later, Bob's process crashes (kill -9).
+
+**Timeline:**
+
+**T+60.000s - Bob crashes**
+```bash
+kill -9 2002  # Bob's process terminated immediately
+```
+
+**What happens:**
+- Bob's consumption stops instantly
+- Bob's heartbeat thread stops
+- **Kernel automatically releases Bob's file locks (if any were held)**
+- Bob's member file and heartbeat file persist on disk
+
+**T+60.000s to T+90.000s - Heartbeat aging**
+
+Bob's last heartbeat file remains at:
+```json
+{
+  "consumer_id": "consumer-bob-2002",
+  "timestamp": "2025-11-03T10:06:24.891Z",  ← 1 second before crash
+  "generation": 4
+}
+```
+
+**Alice and Charlie continue processing normally.**
+
+**T+90.000s - Alice's heartbeat monitor detects timeout**
+
+Alice's consumer includes a background heartbeat monitor (all consumers run this):
+
+```cpp
+// Alice's heartbeat monitor (runs every 10 seconds)
+void check_heartbeats() {
+    auto now = current_time();  // 2025-11-03T10:06:55.000Z
+
+    for (auto& member_file : list_files("members/")) {
+        std::string consumer_id = extract_id(member_file);
+
+        auto hb = read_heartbeat(consumer_id);
+        auto age = now - hb.timestamp;
+
+        if (age > 30s) {
+            std::cout << "Consumer " << consumer_id << " timed out (age="
+                      << age << "s), triggering rebalance\n";
+            trigger_rebalance(consumer_id);
+            break;
+        }
+    }
+}
+
+// Results:
+// consumer-alice-1001   - age: 2s   ✓ alive
+// consumer-bob-2002     - age: 31s  ✗ TIMEOUT! (crashed at T+60s)
+// consumer-charlie-3003 - age: 1s   ✓ alive
+```
+
+**T+90.050s - Alice acquires lock and triggers rebalance**
+
+```cpp
+void trigger_rebalance(const std::string& dead_consumer) {
+    // Acquire coordinator lock
+    int lock_fd = open("coordinator.lock", O_RDWR);
+    flock(lock_fd, LOCK_EX);
+
+    // Pause own consumption
+    pause_consumption();
+    commit_offset(0, 15234);  // Save Alice's current progress on P0
+
+    // Remove dead consumer's member file
+    remove("members/consumer-bob-2002.json");
+
+    // Remove dead consumer's heartbeat file
+    remove(".coordinator/heartbeats/consumer-bob-2002.heartbeat");
+
+    // Increment generation
+    int gen = read_file("generation.txt");  // 4
+    write_file("generation.txt", gen + 1);  // 5
+
+    // Compute new assignment
+    members = ["consumer-alice-1001", "consumer-charlie-3003"];  // Bob removed
+    RoundRobinAssignor assignor;
+    new_assignments = assignor.assign(members, 4);
+    // Result:
+    //   consumer-alice-1001:   [0, 2]  (has P0, gains P2)
+    //   consumer-charlie-3003: [1, 3]  (gains P1, keeps P3)
+
+    // Write new assignment
+    write_json("assignments.json", {
+      "generation": 5,
+      "timestamp": "2025-11-03T10:06:55.050Z",
+      "assignments": {
+        "consumer-alice-1001": [0, 2],
+        "consumer-charlie-3003": [1, 3]
+      }
+    });
+
+    // Release lock
+    flock(lock_fd, LOCK_UN);
+    close(lock_fd);
+}
+```
+
+**File Changes:**
+```
+generation.txt: 4 → 5
+
+members/
+├── consumer-alice-1001.json
+├── consumer-bob-2002.json       ← DELETED
+└── consumer-charlie-3003.json
+
+assignments.json:
+  generation: 4 → 5
+  assignments:
+    alice:   [0]    → [0, 2]  (gains P2)
+    bob:     [1]    → DELETED
+    charlie: [2, 3] → [1, 3]  (gains P1, loses P2)
+
+.coordinator/heartbeats/
+├── consumer-alice-1001.heartbeat
+├── consumer-bob-2002.heartbeat  ← DELETED
+└── consumer-charlie-3003.heartbeat
+```
+
+**T+90.100s - Charlie detects generation change and rebalances**
+
+```cpp
+// Charlie's main loop
+int current_gen = read_file("generation.txt");  // 5
+if (current_gen != my_generation_) {  // was 4
+    on_rebalance_triggered();
+}
+
+// Charlie commits current progress on P2, P3
+commit_offset(2, 14103);
+commit_offset(3, 14087);
+
+// Charlie acquires lock (Alice already released it)
+flock(lock_fd, LOCK_EX);
+
+// Charlie reads new assignment
+assignments = read_json("assignments.json");
+my_partitions_ = [1, 3];  // Lost P2, gained P1
+my_generation_ = 5;
+
+flock(lock_fd, LOCK_UN);
+
+// Charlie loads offset for P1 (Bob's last commit before crash)
+offset_p1 = read_file("offsets/partition-1.offset");  // Let's say Bob got to 14562
+
+// Charlie starts consuming P1@14563, P3@14088 (re-reads P3 from checkpoint)
+resume_consumption();
+```
+
+**T+90.150s - Alice loads new partition P2**
+
+```cpp
+// Alice rejoins and reads new assignment: [0, 2]
+
+// Load offset for P2 (Charlie's last commit)
+offset_p2 = read_file("offsets/partition-2.offset");  // 14103
+
+// Resume consuming P0@15235, P2@14104
+resume_consumption();
+```
+
+---
+
+#### Final State After Crash Recovery (T+90.200s)
+
+**System State:**
+```
+Generation: 5
+Members: 2 (Alice, Charlie)
+
+Partition Assignment:
+  P0 → Alice   (still Alice)
+  P1 → Charlie (was Bob, moved to Charlie)
+  P2 → Alice   (was Charlie, moved to Alice)
+  P3 → Charlie (still Charlie)
+
+File System:
+consumer-groups/analytics-workers/
+├── coordinator.lock              (not held)
+├── generation.txt                5
+├── members/
+│   ├── consumer-alice-1001.json
+│   └── consumer-charlie-3003.json
+├── assignments.json
+│   {
+│     "generation": 5,
+│     "assignments": {
+│       "consumer-alice-1001": [0, 2],
+│       "consumer-charlie-3003": [1, 3]
+│     }
+│   }
+└── offsets/
+    ├── partition-0.offset        15234  (Alice's checkpoint before rebalance)
+    ├── partition-1.offset        14562  (Bob's last checkpoint before crash)
+    ├── partition-2.offset        14103  (Charlie's checkpoint before rebalance)
+    └── partition-3.offset        14087  (Charlie's checkpoint before rebalance)
+
+.coordinator/heartbeats/
+├── consumer-alice-1001.heartbeat   (generation: 5)
+└── consumer-charlie-3003.heartbeat (generation: 5)
+```
+
+**Recovery Summary:**
+- Bob crashed at T+60s, but wasn't detected until T+90s (30s timeout)
+- Alice detected the failure and coordinated rebalance
+- Partitions P1 (Bob's) redistributed to Charlie
+- Partition P2 moved from Charlie to Alice (load balancing)
+- **No data loss:** Bob's last committed offset (14562) used by Charlie
+- **Rebalance duration:** ~150ms
+- **Total unavailability window:** ~150ms (Alice and Charlie pause briefly)
+
+---
+
+#### Key Observations from This Example
+
+1. **`coordinator.lock` prevents races:**
+   - Only one consumer can modify assignments at a time
+   - Charlie, Alice, and Bob safely coordinate despite running concurrently
+   - Kernel automatically releases lock on crash (Bob's crash doesn't deadlock system)
+
+2. **`generation.txt` acts as a version fence:**
+   - Incremented on every membership change (3 → 4 → 5)
+   - Consumers detect stale state immediately (within 100ms poll interval)
+   - Prevents split-brain: old consumers can't commit offsets after rebalance
+
+3. **`members/*.json` tracks group membership:**
+   - Charlie adds himself to members/ directory
+   - Alice removes Bob after timeout
+   - Simple file existence = membership
+
+4. **`assignments.json` defines ownership:**
+   - Modified only under coordinator lock
+   - Contains generation number to detect races
+   - Consumers load this after detecting generation change
+
+5. **`heartbeats/*.heartbeat` enables failure detection:**
+   - Written every 5 seconds by each consumer
+   - Monitored every 10 seconds by all consumers
+   - 30-second timeout balances false positives vs detection latency
+   - Simple timestamp comparison, no complex consensus needed
+
+6. **Coordination is decentralized:**
+   - No dedicated coordinator process
+   - Any consumer can trigger rebalance (Alice did it for Bob's crash)
+   - First to acquire lock becomes temporary coordinator
+   - This is a "leader-less" coordination approach
+
+---
+
 ### Directory Structure
 
 ```
@@ -234,6 +1010,520 @@ close(fd);
 - POSIX `flock()` provides process-level mutual exclusion via kernel
 - Lock automatically released on process crash (kernel cleanup)
 - Works across processes on same machine
+
+**🎯 Design Rationale & Problem Solved**
+
+**The Coordination Problem:**
+
+Without `coordinator.lock`, imagine this race condition:
+
+```
+T=0.000s: Consumer A detects Bob crashed, starts rebalance
+T=0.001s: Consumer C ALSO detects Bob crashed, starts rebalance
+T=0.100s: Both read assignments.json (current: {A: [0,1], B: [2], C: [3]})
+T=0.150s: A computes new assignment: {A: [0,2], C: [1,3]}
+T=0.151s: C computes new assignment: {A: [0,1,2], C: [3]} (different!)
+T=0.200s: A writes assignments.json → {A: [0,2], C: [1,3]}
+T=0.201s: C writes assignments.json → {A: [0,1,2], C: [3]}  ← OVERWRITES A's work!
+T=0.250s: SPLIT-BRAIN: A thinks it owns [0,2], C thinks A owns [0,1,2]
+          → Partition 1 not owned by anyone! Messages lost!
+```
+
+**What breaks without coordinator.lock:**
+1. **Double rebalancing:** Multiple consumers trigger simultaneous rebalances
+2. **Lost partitions:** Conflicting assignments leave partitions unowned
+3. **Duplicate ownership:** Two consumers think they own same partition → duplicate processing
+4. **Inconsistent state:** `assignments.json` gets corrupted by concurrent writes
+
+**How coordinator.lock solves this:**
+
+```
+T=0.000s: Consumer A acquires lock → BLOCKS others
+T=0.001s: Consumer C tries to acquire → BLOCKS (waits for A)
+T=0.100s: A reads, computes, writes assignments
+T=0.200s: A releases lock
+T=0.201s: C acquires lock → reads A's NEW assignments
+T=0.250s: C sees Bob already removed, no rebalance needed, releases lock
+```
+
+**Key Property:** Serializes rebalancing operations (only one at a time).
+
+**Invariants Maintained:**
+- Only ONE consumer modifies `assignments.json` at any moment
+- All reads of `assignments.json` happen BEFORE or AFTER writes (never during)
+- `generation.txt`, `members/`, and `assignments.json` stay consistent (atomic update group)
+
+**Real-World Analogy:**
+
+Think of `coordinator.lock` like a "talking stick" in a meeting:
+- Only person holding stick can speak (modify state)
+- Others must wait their turn (blocked on lock)
+- If speaker leaves meeting suddenly (crash), stick automatically passes to next person (kernel cleanup)
+- No two people can hold stick simultaneously (mutual exclusion guarantee)
+
+---
+
+**📊 Read/Write Access Patterns**
+
+**Access Matrix:**
+
+| Operation | Who | Frequency | Blocking? | Duration Held |
+|-----------|-----|-----------|-----------|---------------|
+| **Acquire lock** | Any consumer detecting membership change | Rare (only during rebalance) | Yes (blocks until available) | 50-200ms |
+| **Hold lock** | Rebalance initiator | During entire rebalance process | N/A | 50-200ms |
+| **Release lock** | Rebalance initiator | End of rebalance | No | Instant |
+| **Check if locked** | None (lock is opaque) | Never | N/A | N/A |
+
+**Lifecycle State Diagram:**
+
+```
+[Steady State] ─────────────────────────────────────────────┐
+                                                             │
+  No one holds lock                                          │
+  All consumers processing normally                          │
+  Lock file exists but not acquired                          │
+                                                             │
+         │                                                   │
+         │ Trigger: Consumer detects timeout / join         │
+         ↓                                                   │
+                                                             │
+[Consumer A Attempts Lock] ────────────────────────┐        │
+                                                    │        │
+  A: flock(fd, LOCK_EX) → SUCCESS (acquired)       │        │
+  A is now "coordinator"                            │        │
+  Other consumers blocked if they try               │        │
+                                                    │        │
+         │                                          │        │
+         │ A performs rebalance                     │        │
+         ↓                                          │        │
+                                                    │        │
+[Critical Section] ──────────────────────────────┐ │        │
+                                                 │ │        │
+  ATOMIC operation group:                        │ │        │
+  1. Read members/*.json                         │ │        │
+  2. Read assignments.json                       │ │        │
+  3. Compute new assignment                      │ │        │
+  4. Increment generation.txt                    │ │        │
+  5. Write new assignments.json                  │ │        │
+  6. (Optional) Delete/add member files          │ │        │
+                                                 │ │        │
+  Duration: 50-200ms                             │ │        │
+                                                 │ │        │
+         │                                       │ │        │
+         ↓                                       │ │        │
+                                                 │ │        │
+[Release Lock] ──────────────────────────────────┘ │        │
+                                                   │        │
+  A: flock(fd, LOCK_UN) → lock released           │        │
+  A: close(fd)                                     │        │
+                                                   │        │
+         │                                         │        │
+         │ If other consumers waiting...           │        │
+         ↓                                         │        │
+                                                   │        │
+[Consumer B Acquires Lock] (if racing) ────────────┘        │
+                                                            │
+  B sees A already completed rebalance                      │
+  B releases lock immediately                               │
+                                                            │
+         │                                                  │
+         └──────────────────────────────────────────────────┘
+```
+
+**Concurrency Rules:**
+
+1. **Can 2 processes acquire simultaneously?**
+   - **No.** POSIX `flock()` guarantees exclusive access (LOCK_EX)
+   - Kernel maintains queue of waiters
+   - Second process BLOCKS until first releases
+
+2. **What if process crashes while holding lock?**
+   - **Automatic cleanup.** Kernel releases lock when file descriptor closed
+   - `close(fd)` happens automatically on process death
+   - Next waiter immediately unblocks and acquires lock
+   - **No deadlock possible**
+
+3. **Can process read lock status without acquiring?**
+   - **No.** `flock()` doesn't support "try-lock" queries
+   - Only way to check: attempt `flock()` with LOCK_NB (non-blocking)
+   - Not used in this design (consumers always willing to wait)
+
+4. **Lock ordering to prevent deadlocks?**
+   - **Not applicable.** Only ONE lock in the entire system
+   - No possibility of circular wait (deadlock impossible)
+
+**Performance Characteristics:**
+
+- **Acquisition latency:** ~0.01ms (in-memory kernel operation)
+- **Contention:** Rare (only during rebalancing, not steady state)
+- **Throughput impact:** Zero (lock not held during message processing)
+- **Scalability limit:** ~10-20 consumers (too many simultaneous rebalance attempts cause thundering herd)
+
+**Lock Hold Duration Breakdown:**
+
+```
+Total rebalance time: ~150ms
+├── Acquire lock:          0.01ms  ( 0.01%)
+├── Read files:           10ms     ( 6.67%)
+│   ├── List members/
+│   ├── Read assignments.json
+│   └── Read generation.txt
+├── Compute assignment:    5ms     ( 3.33%)
+├── Write files:          30ms     (20.00%)
+│   ├── Write generation.txt
+│   ├── Write assignments.json
+│   └── (Optional) Update members/
+├── fsync durability:    100ms     (66.67%)
+└── Release lock:          0.01ms  ( 0.01%)
+```
+
+**Bottleneck:** fsync() calls for durability (can optimize by batching)
+
+---
+
+**🔄 Alternative Designs Considered**
+
+**Alternative 1: POSIX Semaphores (`sem_open`)**
+
+**How it would work:**
+```cpp
+sem_t* sem = sem_open("/consumer_group_lock", O_CREAT, 0644, 1);
+sem_wait(sem);  // Acquire
+// Critical section
+sem_post(sem);  // Release
+sem_close(sem);
+```
+
+**Pros:**
+- Named semaphores persist across processes
+- Simpler API than file locks
+- Supports try-wait (non-blocking)
+
+**Cons:**
+- ❌ **No automatic cleanup on crash** → deadlock if process dies holding semaphore
+- ❌ Requires manual cleanup (sem_unlink) → orphaned semaphores accumulate
+- ❌ Not visible in filesystem (can't `ls` to debug)
+- ❌ Platform-specific limits (macOS has issues with named semaphores)
+
+**Why rejected:** Crash recovery is critical. `flock()` auto-releases on crash; semaphores don't.
+
+---
+
+**Alternative 2: SQLite Database with Transaction Locks**
+
+**How it would work:**
+```cpp
+sqlite3* db = open("coordination.db");
+sqlite3_exec(db, "BEGIN EXCLUSIVE TRANSACTION");
+// Read assignments, compute new, write
+sqlite3_exec(db, "COMMIT");
+```
+
+**Pros:**
+- ACID transactions (atomic updates)
+- Single file (simpler than multiple files)
+- SQL queries for complex coordination
+- Built-in locking
+
+**Cons:**
+- ❌ **Single writer bottleneck** → only one transaction at a time
+- ❌ Heavyweight (full SQL engine for simple key-value storage)
+- ❌ External dependency (need libsqlite3)
+- ❌ Lock timeout tuning required (default 5s too long for real-time rebalancing)
+- ❌ WAL mode still does fsync (no performance gain)
+
+**Why rejected:** Overkill for this use case. File locks are simpler and sufficient.
+
+---
+
+**Alternative 3: Advisory Lock Files (`lockf()` or `fcntl()`)**
+
+**How it would work:**
+```cpp
+int fd = open("coordinator.lock", O_RDWR | O_CREAT);
+lockf(fd, F_LOCK, 0);  // Acquire
+// Critical section
+lockf(fd, F_ULOCK, 0);  // Release
+close(fd);
+```
+
+**Pros:**
+- POSIX standard (portable)
+- Automatic release on process death
+- Byte-range locking (can lock parts of files)
+
+**Cons:**
+- ⚠️ **Advisory only** → malicious process can ignore lock
+- ⚠️ Behavior varies across NFS implementations
+- No functional advantage over `flock()` for this use case
+
+**Why rejected:** `flock()` is simpler and more widely supported.
+
+---
+
+**Alternative 4: Shared Memory with Atomic Operations (`shm_open` + atomics)**
+
+**How it would work:**
+```cpp
+int fd = shm_open("/consumer_lock", O_CREAT | O_RDWR, 0644);
+ftruncate(fd, sizeof(std::atomic<bool>));
+std::atomic<bool>* lock = mmap(..., fd, ...);
+
+bool expected = false;
+while (!lock->compare_exchange_strong(expected, true)) {
+    expected = false;  // Retry
+}
+// Critical section
+lock->store(false);  // Release
+```
+
+**Pros:**
+- **Fastest** (no syscalls after initial setup)
+- Lock/unlock in ~10 nanoseconds (vs 10 microseconds for flock)
+- True shared memory (no file I/O)
+
+**Cons:**
+- ❌ **No automatic cleanup** → deadlock if process crashes holding lock
+- ❌ **No persistence** → state lost if all processes restart
+- ❌ Complex cleanup logic needed
+- ❌ Requires careful memory barriers and ordering
+- ❌ Harder to debug (can't inspect with `ls` or `cat`)
+
+**Why rejected:** We need durability (crash recovery). Shared memory is volatile.
+
+---
+
+**Alternative 5: Redis with SET NX (Network Lock)**
+
+**How it would work:**
+```cpp
+redis_client.set("coordinator_lock", consumer_id, "NX", "EX", 30);  // 30s expiry
+// Critical section
+redis_client.del("coordinator_lock");
+```
+
+**Pros:**
+- Works across network (multi-machine)
+- Built-in expiry (automatic cleanup after timeout)
+- Atomic operations (SET NX is atomic)
+- Simple API
+
+**Cons:**
+- ❌ **External dependency** → requires Redis server running
+- ❌ Network overhead (latency: ~1-5ms vs 0.01ms for flock)
+- ❌ Single point of failure (Redis crash = entire system down)
+- ❌ **Overkill for single-machine** coordination (this is Phase 2)
+- ❌ Clock skew issues (expiry based on wall-clock time)
+
+**Why rejected:** Phase 2 is single-machine only. Redis is for Phase 3 (distributed).
+
+---
+
+**Why File Locks Won:**
+
+| Criterion | `flock()` | Semaphores | SQLite | Shared Mem | Redis |
+|-----------|-----------|------------|--------|------------|-------|
+| **Auto cleanup on crash** | ✅ Kernel | ❌ Manual | ✅ Rollback | ❌ Manual | ⚠️ Timeout |
+| **Durability** | ✅ Files persist | ❌ Volatile | ✅ DB persists | ❌ Volatile | ✅ Persists |
+| **Simplicity** | ✅ 5 LOC | ✅ 6 LOC | ❌ 20+ LOC | ❌ 30+ LOC | ❌ 10+ LOC + server |
+| **Debuggability** | ✅ `ls`, `lsof` | ❌ Hidden | ⚠️ SQL client | ❌ Hidden | ⚠️ Redis client |
+| **Performance** | ✅ 0.01ms | ✅ 0.01ms | ⚠️ 1-5ms | ✅ 0.00001ms | ❌ 1-10ms |
+| **Portability** | ✅ POSIX | ⚠️ macOS issues | ✅ Cross-platform | ⚠️ Complex | ✅ Client libs |
+| **Multi-machine** | ❌ No | ❌ No | ❌ No | ❌ No | ✅ Yes |
+
+**Decision:** `flock()` wins for single-machine coordination (Phase 2). Redis will be used in Phase 3 (distributed).
+
+---
+
+**🚀 Evolution Path**
+
+**Phase 2: File-Based (Current)**
+
+```cpp
+// Acquire lock
+int lock_fd = open("consumer-groups/my-group/coordinator.lock", O_RDWR | O_CREAT, 0644);
+int result = flock(lock_fd, LOCK_EX);  // Blocks until acquired
+
+// Critical section: read-modify-write
+int generation = read_file("generation.txt");
+Assignments assign = read_assignments();
+assign.rebalance();
+write_file("generation.txt", generation + 1);
+write_assignments(assign);
+
+// Release lock
+flock(lock_fd, LOCK_UN);
+close(lock_fd);
+```
+
+**Characteristics:**
+- **Scope:** Single machine only (all consumers on same host)
+- **Latency:** ~0.01ms to acquire lock
+- **Failure handling:** Kernel auto-releases on crash
+- **Limitations:** Doesn't work across network (NFS has race conditions)
+
+---
+
+**How Kafka Handles This (Production Reality)**
+
+Kafka uses **ZooKeeper** for coordination, NOT file locks:
+
+```java
+// Kafka's Group Coordinator (simplified)
+String lockPath = "/consumers/" + groupId + "/lock";
+
+// ZooKeeper ephemeral sequential node for leader election
+zookeeper.create(lockPath, data, EPHEMERAL_SEQUENTIAL);
+
+// Lowest sequence number = coordinator
+List<String> children = zookeeper.getChildren("/consumers/" + groupId);
+String lowestSeq = children.stream().min().get();
+
+if (myNode.equals(lowestSeq)) {
+    // I am coordinator - perform rebalance
+    performRebalance();
+}
+
+// Lock automatically released when session ends (ephemeral node deleted)
+```
+
+**Key Differences:**
+
+| Aspect | Phase 2 (File Lock) | Kafka (ZooKeeper) |
+|--------|---------------------|-------------------|
+| **Scope** | Single machine | Distributed (across data centers) |
+| **Lock mechanism** | `flock()` syscall | ZooKeeper ephemeral nodes |
+| **Cleanup** | Kernel auto-release | ZooKeeper session timeout |
+| **Leader election** | First to acquire lock | Lowest sequence number |
+| **Network-aware** | No (local filesystem) | Yes (distributed consensus) |
+| **Failure detection** | Immediate (kernel knows) | ~3-30s (ZK session timeout) |
+| **Scalability** | ~10 consumers | 1000s of consumers across brokers |
+
+**Why ZooKeeper:**
+- **Multi-machine:** Consumers can run on different hosts
+- **Consensus:** All consumers agree on same coordinator (no split-brain)
+- **Atomic broadcast:** Changes propagate to all nodes reliably
+- **Watches:** Consumers notified immediately when lock released (no polling)
+
+---
+
+**How ZooKeeper Will Handle This (Phase 3 Preview)**
+
+```cpp
+// Phase 3: ZooKeeper-based coordination (preview)
+
+zhandle_t* zh = zookeeper_init("localhost:2181", watcher_fn, 10000, nullptr, nullptr, 0);
+
+// Attempt to create ephemeral sequential node
+std::string lock_path = "/consumers/my-group/lock-";
+char created_path[256];
+
+int rc = zoo_create(zh,
+                     lock_path.c_str(),
+                     consumer_id.c_str(),
+                     consumer_id.length(),
+                     &ZOO_OPEN_ACL_UNSAFE,
+                     ZOO_EPHEMERAL | ZOO_SEQUENCE,  // Auto-delete on disconnect
+                     created_path,
+                     sizeof(created_path));
+
+// Read all lock nodes, find lowest sequence (= coordinator)
+String_vector children;
+zoo_get_children(zh, "/consumers/my-group", 0, &children);
+
+std::sort(children.data, children.data + children.count);
+std::string coordinator = children.data[0];  // Lowest seq
+
+if (strcmp(created_path, coordinator) == 0) {
+    // I am coordinator!
+    perform_rebalance();
+} else {
+    // Watch the node before me (wait for my turn)
+    zoo_wexists(zh, get_prev_node(created_path), watcher_fn, nullptr, nullptr);
+}
+
+// Cleanup: ephemeral node auto-deleted when session ends
+```
+
+**ZooKeeper Benefits:**
+
+1. **Automatic leader election:**
+   - Sequential nodes guarantee ordered queue
+   - Lowest sequence = coordinator
+   - No race conditions (atomic node creation)
+
+2. **Ephemeral nodes:**
+   - Auto-deleted when consumer disconnects
+   - No manual cleanup needed
+   - Faster failure detection (ZK session timeout, not file heartbeat)
+
+3. **Watches (event-driven):**
+   - Consumers notified when coordinator changes
+   - No polling `generation.txt` every 100ms
+   - Lower CPU usage, faster reaction time
+
+4. **Distributed consensus:**
+   - Works across machines (WAN)
+   - Tolerates network partitions (ZK quorum)
+   - Strong consistency guarantees
+
+**Migration Code Example:**
+
+```cpp
+// Phase 2 → Phase 3 migration
+
+class CoordinatorLock {
+public:
+    virtual void acquire() = 0;
+    virtual void release() = 0;
+    virtual ~CoordinatorLock() = default;
+};
+
+// Phase 2 implementation
+class FileLock : public CoordinatorLock {
+    int fd_;
+public:
+    void acquire() override {
+        fd_ = open("coordinator.lock", O_RDWR | O_CREAT);
+        flock(fd_, LOCK_EX);
+    }
+    void release() override {
+        flock(fd_, LOCK_UN);
+        close(fd_);
+    }
+};
+
+// Phase 3 implementation
+class ZooKeeperLock : public CoordinatorLock {
+    zhandle_t* zh_;
+    std::string lock_path_;
+public:
+    void acquire() override {
+        zoo_create(zh_, lock_path_.c_str(), ..., ZOO_EPHEMERAL | ZOO_SEQUENCE, ...);
+        wait_until_lowest_sequence();
+    }
+    void release() override {
+        zoo_delete(zh_, lock_path_.c_str(), -1);
+    }
+};
+
+// Usage (same for both phases)
+std::unique_ptr<CoordinatorLock> lock = create_lock(mode);
+lock->acquire();
+// Critical section
+lock->release();
+```
+
+**When to Use Each:**
+
+| Use Case | Phase 2 (File Lock) | Phase 3 (ZooKeeper) |
+|----------|---------------------|---------------------|
+| **Single machine** | ✅ Perfect | ⚠️ Overkill (but works) |
+| **Multiple machines (same datacenter)** | ❌ Won't work | ✅ Required |
+| **Multiple datacenters** | ❌ Won't work | ✅ Required |
+| **<10 consumers** | ✅ Simple | ⚠️ Operational overhead |
+| **100s of consumers** | ❌ Too slow | ✅ Designed for this |
+| **Learning/prototyping** | ✅ Zero dependencies | ❌ Requires ZK cluster |
 
 ---
 
