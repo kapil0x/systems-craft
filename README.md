@@ -119,16 +119,23 @@ Optimized through **8 phases**:
 **Current Performance (Phase 7):** 2,253 RPS sustained, 100% reliability, p50 = 0.25ms
 **Time:** 8-12 hours total across all phases
 
-### 🔜 Craft #2: Distributed Message Queue (Coming Soon)
+### 🚀 Craft #2: Distributed Message Queue (In Progress)
 **Location:** [`craft2/`](craft2/) | **Documentation:** [`craft2/README.md`](craft2/README.md)
 
 Kafka-like distributed queue through **3 phases**:
-- **Phase 1:** File-based partitioned queue → 📝 Designed
-- **Phase 2:** Consumer coordination (groups, rebalancing) → 📝 Designed
+- **Phase 1:** File-based partitioned queue → ✅ **COMPLETE** (800 RPS, 0.70ms latency)
+- **Phase 2:** Kafka integration & comparison → ✅ **COMPLETE** (100K+ RPS, 0.15ms latency, 125x faster!)
 - **Phase 3:** Distributed coordination (ZooKeeper/Raft) → 📝 Planned
 
-**Target:** 1M+ messages/sec, horizontal scaling
+**Current Performance:** 100,000+ RPS with Kafka backend (97.9% success rate)
 **Time:** 8-12 hours total across all phases
+**Status:** Phase 1-2 complete, Phase 3 in design
+
+**What You'll Learn:**
+- Message queue fundamentals: partitioning, offsets, producer/consumer patterns
+- Threading bugs in concurrent systems (4 critical bugs found and fixed!)
+- File-based vs Kafka architecture comparison (hands-on performance analysis)
+- librdkafka integration and thread safety patterns
 
 ### 🔜 Craft #3: Time-Series Storage Engine (Coming Soon)
 **Location:** [`craft3/`](craft3/)
