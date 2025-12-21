@@ -41,4 +41,52 @@ target_include_directories(ingestion_lib PUBLIC
 target_link_libraries(ingestion_lib
     http_server_lib
     common_lib
+    kafka_producer_lib
+    partitioned_queue_lib
+)
+
+# Partitioned queue library
+add_library(partitioned_queue_lib
+    partitioned_queue.cpp
+)
+
+target_include_directories(partitioned_queue_lib PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+# Queue consumer library
+add_library(queue_consumer_lib
+    queue_consumer.cpp
+)
+
+target_include_directories(queue_consumer_lib PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+# Kafka producer library
+add_library(kafka_producer_lib
+    kafka_producer.cpp
+)
+
+target_include_directories(kafka_producer_lib PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(kafka_producer_lib
+    ${RDKAFKA_LIBRARY}
+    ${RDKAFKA_C_LIBRARY}
+)
+
+# Kafka consumer library
+add_library(kafka_consumer_lib
+    kafka_consumer.cpp
+)
+
+target_include_directories(kafka_consumer_lib PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(kafka_consumer_lib
+    ${RDKAFKA_LIBRARY}
+    ${RDKAFKA_C_LIBRARY}
 )

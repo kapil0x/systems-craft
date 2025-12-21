@@ -2,6 +2,8 @@
 
 #include "metric.h"
 #include "http_server.h"
+#include "partitioned_queue.h"
+#include "kafka_producer.h"
 #include <memory>
 #include <atomic>
 #include <unordered_map>
@@ -17,6 +19,11 @@
 #include <thread>
 
 namespace metricstream {
+
+enum class QueueMode {
+    FILE_BASED,  // Use partitioned file queue
+    KAFKA        // Use Kafka message queue
+};
 
 class MetricValidator {
 public:
@@ -74,7 +81,9 @@ private:
 
 class IngestionService {
 public:
-    IngestionService(int port, size_t rate_limit = 10000);
+    IngestionService(int port, size_t rate_limit = 10000, int num_partitions = 4,
+                     QueueMode mode = QueueMode::FILE_BASED,
+                     const std::string& kafka_brokers = "localhost:9092");
     ~IngestionService();
     
     void start();
@@ -95,13 +104,18 @@ private:
     std::atomic<size_t> batches_processed_;
     std::atomic<size_t> validation_errors_;
     std::atomic<size_t> rate_limited_;
-    
-    // File storage for MVP
+
+    // Queue storage options
+    std::unique_ptr<PartitionedQueue> file_queue_;  // File-based message queue
+    std::unique_ptr<KafkaProducer> kafka_producer_; // Kafka producer
+    QueueMode queue_mode_;                          // Which queue to use
+
+    // Legacy file storage (for compatibility)
     std::ofstream metrics_file_;
     std::mutex file_mutex_;
     
     // Asynchronous batch writer infrastructure
-    std::queue<MetricBatch> write_queue_;
+    std::queue<std::pair<MetricBatch, std::string>> write_queue_;  // pair<batch, client_id>
     std::mutex queue_mutex_;
     std::condition_variable queue_cv_;
     std::thread writer_thread_;
@@ -119,9 +133,10 @@ private:
     std::string extract_string_field(const std::string& json, const std::string& field);
     double extract_numeric_field(const std::string& json, const std::string& field);
     Tags extract_tags(const std::string& json);
-    void store_metrics_to_file(const MetricBatch& batch);
-    void queue_metrics_for_async_write(const MetricBatch& batch);
+    void store_metrics_to_queue(const MetricBatch& batch, const std::string& client_id);
+    void queue_metrics_for_async_write(const MetricBatch& batch, const std::string& client_id);
     void async_writer_loop();
+    std::string serialize_metrics_batch_to_json(const MetricBatch& batch);
     std::string create_error_response(const std::string& message);
     std::string create_success_response(size_t metrics_count);
 };
