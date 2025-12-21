@@ -550,13 +550,10 @@
 <body>
     <div class="container">
         <header>
-            <a href="systems-craft-main.html" style="display: inline-block; color: #95a5a6; text-decoration: none; margin-bottom: 15px; font-size: 0.9em; transition: color 0.3s ease;" onmouseover="this.style.color='#ecf0f1'" onmouseout="this.style.color='#95a5a6'">
-                ← Back to Systems Craft
-            </a>
             <div style="font-size: 0.9em; color: #95a5a6; margin-bottom: 10px; letter-spacing: 2px;">SYSTEMS CRAFT</div>
             <h1>⚡ Craft #1: Metrics Ingestion</h1>
             <p class="subtitle">Build a high-performance metrics system from scratch</p>
-            <p class="tagline">A hands-on tutorial teaching concurrent programming and performance optimization through building a complete metrics platform</p>
+            <p class="tagline">A hands-on tutorial teaching concurrent programming and performance optimization through 7 progressive phases</p>
         </header>
 
         <div class="phase-nav">
@@ -568,7 +565,11 @@
                         <span class="phase-number">📚</span>
                         <span class="phase-label">Overview</span>
                     </div>
+                    <div class="phase-tab" onclick="showPhase('phase0')">
+                        <span class="phase-number">0</span>
+                        <span class="phase-label">System Design</span>
                     </div>
+                </div>
             </div>
 
             <!-- Milestone 1: Phases 1-7 -->
@@ -602,10 +603,6 @@
                     <div class="phase-tab completed" onclick="showPhase('phase7')">
                         <span class="phase-number">7</span>
                         <span class="phase-label">Keep-Alive</span>
-                    </div>
-                    <div class="phase-tab completed" onclick="showPhase('phase8')">
-                        <span class="phase-number">8</span>
-                        <span class="phase-label">Event-Driven I/O</span>
                     </div>
                 </div>
             </div>
@@ -660,7 +657,7 @@ $ ./build/load_test 8080 20 10</div>
                     <p style="color: #34495e; margin-bottom: 10px;">Choose your path:</p>
                     <ul style="color: #34495e; margin-left: 20px; line-height: 1.8;">
                         <li><strong>Guided Learning:</strong> Click "Phase 1" above to start the tutorial</li>
-                        <li><strong>Hands-On Practice:</strong> Checkout <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;">Use template: templates/craft1_phase1_starter.cpp</code> and implement yourself</li>
+                        <li><strong>Hands-On Practice:</strong> Checkout <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;">git checkout phase-1-starter</code> and implement yourself</li>
                         <li><strong>Code Review:</strong> Read the solution branches to understand each optimization</li>
                     </ul>
                 </div>
@@ -710,71 +707,86 @@ $ ./build/load_test 8080 20 10</div>
                 <p style="margin-top: 10px;"><strong>Note:</strong> Production deployments on AWS c5.2xlarge showed 15-20% higher throughput due to more cores and better I/O. Your results will vary based on hardware.</p>
             </div>
 
-            <h3>🏗️ Craft #1: Metrics Ingestion System</h3>
+            <h3>🎨 Systems Craft Series</h3>
 
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 30px; margin: 20px 0;">
                 <p style="color: rgba(255,255,255,0.95); text-align: center; font-size: 1.1em; line-height: 1.7; margin-bottom: 25px;">
-                    Craft #1 focuses on <strong>optimizing metrics ingestion</strong> through 7 progressive phases (200 → 2,253 RPS). After completing Phase 0's architecture validation, you'll make the ingestion component production-ready through systematic optimization.
+                    <strong>Systems Craft</strong> is a series of hands-on tutorials teaching systems engineering by building real infrastructure from first principles. Each craft focuses on one system component with progressive optimization phases.
                 </p>
 
-                <!-- Craft #1 Status -->
+                <!-- Craft #1 - Current -->
                 <div style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 6px 20px rgba(39,174,96,0.4); border: 3px solid #f1c40f;">
                     <div style="display: flex; align-items: center; margin-bottom: 12px;">
                         <div style="background: #f1c40f; color: #27ae60; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3em; margin-right: 15px; box-shadow: 0 3px 10px rgba(241,196,15,0.5);">1</div>
                         <div>
-                            <div style="color: #f1c40f; font-size: 0.75em; font-weight: 600; letter-spacing: 1px;">✓ CRAFT #1 COMPLETE</div>
-                            <div style="color: #fff; font-size: 1.3em; font-weight: bold;">High-Performance Metrics Ingestion</div>
+                            <div style="color: #f1c40f; font-size: 0.75em; font-weight: 600; letter-spacing: 1px;">YOU ARE HERE</div>
+                            <div style="color: #fff; font-size: 1.3em; font-weight: bold;">Metrics Ingestion System</div>
                         </div>
-                        <span style="margin-left: auto; background: #f1c40f; padding: 6px 14px; border-radius: 20px; color: #27ae60; font-weight: bold; font-size: 0.9em;">2,253 RPS</span>
+                        <span style="margin-left: auto; background: #f1c40f; padding: 6px 14px; border-radius: 20px; color: #27ae60; font-weight: bold; font-size: 0.9em;">ACTIVE</span>
                     </div>
                     <div style="color: rgba(255,255,255,0.95); font-size: 0.95em; line-height: 1.6; padding-left: 60px;">
-                        <strong>What you'll build:</strong> HTTP server → Thread pool → Lock-free ring buffers → Custom JSON parser → Rate limiting<br>
-                        <strong>Performance:</strong> 2,253 RPS sustained, 100% reliability, p50 = 0.25ms latency<br>
-                        <strong>Phases included:</strong> 7 progressive optimizations (Phases 1-7)<br>
-                        <strong>Skills mastered:</strong> Concurrent programming, performance optimization, systems profiling
+                        <strong>What you'll build:</strong> High-performance HTTP server from raw sockets → Thread pool → Lock-free ring buffers → Custom JSON parser → Rate limiting<br>
+                        <strong>Skills learned:</strong> Concurrent programming, performance optimization, systems profiling<br>
+                        <strong>Result:</strong> 2,253 RPS sustained, 100% reliability, p50 = 0.25ms latency<br>
+                        <strong>Phases:</strong> 7 progressive optimizations (sequential → production-ready)
                     </div>
                 </div>
 
-                <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-                    <h4 style="color: white; margin-top: 0; margin-bottom: 15px;">🗺️ Your Learning Journey: 6 Crafts</h4>
-                    <p style="margin-bottom: 20px; opacity: 0.95; line-height: 1.7;">
-                        After completing Phase 0's PoC, Craft #1 optimizes the ingestion component through 7 phases (200 → 2,253 RPS). Then continue with Crafts #2-5 to complete the monitoring platform:
-                    </p>
-                    <div style="display: grid; gap: 12px;">
-                        <div style="background: rgba(39,174,96,0.15); padding: 15px; border-radius: 8px; border-left: 4px solid #27ae60;">
-                            <strong>Craft #0: Monitoring Platform PoC</strong> ✅ <span style="color: #27ae60;">(AVAILABLE)</span><br>
-                            <span style="opacity: 0.9; font-size: 0.9em;">End-to-end system in an afternoon - validate architecture first</span>
+                <!-- Craft #2 - Coming Soon -->
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); border-radius: 12px; padding: 20px; margin-bottom: 15px; opacity: 0.9;">
+                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <div style="background: rgba(255,255,255,0.9); color: #3498db; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3em; margin-right: 15px;">2</div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.75em; font-weight: 600; letter-spacing: 1px;">COMING SOON</div>
+                            <div style="color: #fff; font-size: 1.3em; font-weight: bold;">Distributed Cache (Redis-like)</div>
                         </div>
-                        <div style="background: rgba(241,196,15,0.2); padding: 15px; border-radius: 8px; border-left: 4px solid #f1c40f;">
-                            <strong>Craft #1: Metrics Ingestion</strong> (You are here! 👉)<br>
-                            <span style="opacity: 0.9; font-size: 0.9em;">HTTP server, rate limiting, async I/O - 200 → 2,253 RPS</span>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid rgba(255,255,255,0.5);">
-                            <strong>Craft #2: Distributed Message Queue</strong> (Coming Soon)<br>
-                            <span style="opacity: 0.8; font-size: 0.9em;">Kafka-like system - partitions, replication, consumer groups</span>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid rgba(255,255,255,0.5);">
-                            <strong>Craft #3: Time-Series Storage Engine</strong> (Coming Soon)<br>
-                            <span style="opacity: 0.8; font-size: 0.9em;">InfluxDB-like database - LSM trees, compression, indexing</span>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid rgba(255,255,255,0.5);">
-                            <strong>Craft #4: Query & Aggregation Engine</strong> (Coming Soon)<br>
-                            <span style="opacity: 0.8; font-size: 0.9em;">PromQL-like queries - parallel execution, aggregations</span>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid rgba(255,255,255,0.5);">
-                            <strong>Craft #5: Alerting & Notification System</strong> (Coming Soon)<br>
-                            <span style="opacity: 0.8; font-size: 0.9em;">PagerDuty-like alerting - rule engine, state machine, webhooks</span>
-                        </div>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; color: #fff; font-size: 0.85em;">Planned</span>
                     </div>
-                    <p style="margin-top: 20px; opacity: 0.95; line-height: 1.7;">
-                        <strong>Complete Journey (Phase 0 + Crafts #1-5):</strong> You'll build a complete distributed monitoring platform from scratch. Phase 0 validates the architecture, then each craft optimizes one component: ingestion → queue → storage → query → alerting.
-                    </p>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.95em; line-height: 1.6; padding-left: 60px;">
+                        <strong>What you'll build:</strong> In-memory key-value store with replication, sharding, and persistence<br>
+                        <strong>Skills learned:</strong> Distributed systems, consensus algorithms, data structures<br>
+                        <strong>Topics:</strong> Hash tables, LRU eviction, Raft consensus, AOF persistence
+                    </div>
+                </div>
+
+                <!-- Craft #3 - Future -->
+                <div style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); border-radius: 12px; padding: 20px; margin-bottom: 15px; opacity: 0.85;">
+                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <div style="background: rgba(255,255,255,0.85); color: #e67e22; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3em; margin-right: 15px;">3</div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.75em; font-weight: 600; letter-spacing: 1px;">FUTURE</div>
+                            <div style="color: #fff; font-size: 1.3em; font-weight: bold;">Message Queue (Kafka-like)</div>
+                        </div>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; color: #fff; font-size: 0.85em;">Planned</span>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.95em; line-height: 1.6; padding-left: 60px;">
+                        <strong>What you'll build:</strong> Distributed message broker with pub/sub, partitioning, and replication<br>
+                        <strong>Skills learned:</strong> Stream processing, disk I/O optimization, distributed coordination<br>
+                        <strong>Topics:</strong> Log-structured storage, zero-copy, consumer groups, leader election
+                    </div>
+                </div>
+
+                <!-- Craft #4 - Future -->
+                <div style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); border-radius: 12px; padding: 20px; opacity: 0.8;">
+                    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <div style="background: rgba(255,255,255,0.8); color: #9b59b6; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3em; margin-right: 15px;">4</div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.75em; font-weight: 600; letter-spacing: 1px;">FUTURE</div>
+                            <div style="color: #fff; font-size: 1.3em; font-weight: bold;">Time-Series Database</div>
+                        </div>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; color: #fff; font-size: 0.85em;">Planned</span>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.95em; line-height: 1.6; padding-left: 60px;">
+                        <strong>What you'll build:</strong> Columnar storage engine optimized for time-series data and aggregations<br>
+                        <strong>Skills learned:</strong> Database internals, compression algorithms, query optimization<br>
+                        <strong>Topics:</strong> LSM trees, delta encoding, downsampling, query planning
+                    </div>
                 </div>
             </div>
 
             <div class="success-box">
                 <h4>✅ What You'll Build in Craft #1</h4>
-                <p><strong>8 Progressive Optimization Phases</strong></p>
+                <p><strong>7 Progressive Optimization Phases</strong></p>
                 <ul style="column-count: 2; column-gap: 30px;">
                     <li><strong>Phase 1:</strong> Thread-per-request model</li>
                     <li><strong>Phase 2:</strong> Async I/O with producer-consumer</li>
@@ -783,7 +795,6 @@ $ ./build/load_test 8080 20 10</div>
                     <li><strong>Phase 5:</strong> Thread pool architecture</li>
                     <li><strong>Phase 6:</strong> Lock-free ring buffers</li>
                     <li><strong>Phase 7:</strong> HTTP Keep-Alive + backlog tuning</li>
-                    <li><strong>Phase 8:</strong> Event-driven I/O with epoll (64x improvement!)</li>
                 </ul>
 
                 <p style="margin-top: 20px;"><strong>Core Components Built:</strong></p>
@@ -794,13 +805,10 @@ $ ./build/load_test 8080 20 10</div>
                     <li>Lock-free atomic ring buffers</li>
                     <li>Sliding window rate limiter</li>
                     <li>HTTP Keep-Alive persistent connections</li>
-                    <li>Event loop with epoll (145K RPS!)</li>
-                    <li>Non-blocking I/O and edge-triggered events</li>
                 </ul>
 
-                <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border-radius: 8px; border-left: 4px solid #fff;">
-                    <strong style="color: #fff;">🎯 Phase 7 Performance:</strong> 2,253 RPS | 100% success | p50 = 0.25ms, p99 = 0.65ms<br>
-                    <strong style="color: #fff; margin-top: 10px; display: inline-block;">⚡ Phase 8 Performance:</strong> 145,348 RPS | 100% success @ 1000 clients | 4.81ms latency | <strong>64x faster!</strong>
+                <div style="margin-top: 20px; padding: 15px; background: #ecf0f1; border-radius: 8px; border-left: 4px solid #27ae60;">
+                    <strong style="color: #27ae60;">🎯 Final Performance:</strong> 2,253 RPS sustained | 100% success rate | p50 = 0.25ms, p99 = 0.65ms | 45% CPU, 150MB memory
                 </div>
             </div>
 
@@ -821,13 +829,12 @@ $ ./build/load_test 8080 20 10</div>
                 <div style="background: #ecf0f1; padding: 20px; border-radius: 10px; border-left: 4px solid #27ae60;">
                     <h4 style="color: #27ae60; margin-top: 0;">💻 Hands-On Practice</h4>
                     <ol style="line-height: 1.8; color: #2c3e50;">
-                        <li>Copy <code style="background: #bdc3c7; padding: 2px 6px; border-radius: 3px;">templates/craft1_phaseN_starter.cpp</code></li>
-                        <li>Read TODO(human) comments - they guide your implementation</li>
+                        <li><code style="background: #bdc3c7; padding: 2px 6px; border-radius: 3px;">git checkout phase-N-starter</code></li>
+                        <li>Read TODO comments in code</li>
                         <li>Implement the optimization yourself</li>
-                        <li>Compile & test, measure performance improvement</li>
-                        <li>Compare with <code style="background: #bdc3c7; padding: 2px 6px; border-radius: 3px;">src/</code> (production solution)</li>
+                        <li>Compare with <code style="background: #bdc3c7; padding: 2px 6px; border-radius: 3px;">phase-N-solution</code></li>
                     </ol>
-                    <p style="margin: 10px 0 0 0; color: #7f8c8d; font-size: 0.9em;"><strong>Best for:</strong> Learning by doing (templates for phases 1-3 available)</p>
+                    <p style="margin: 10px 0 0 0; color: #7f8c8d; font-size: 0.9em;"><strong>Best for:</strong> Learning by doing</p>
                 </div>
             </div>
 
@@ -844,6 +851,326 @@ $ ./build/load_test 8080 20 10</div>
         </div>
 
         <!-- Phase 0: System Design -->
+        <div class="content-panel" id="phase0">
+            <h2>Phase 0: System Design Foundations</h2>
+
+            <div class="info-box">
+                <h3>🎯 What You'll Build</h3>
+                <p>Design a complete real-time monitoring system before writing any code. This phase teaches you to think like a system architect: define requirements, design data flow, choose technologies, and calculate capacity.</p>
+            </div>
+
+            <h3>Step 1: Define Requirements & Constraints</h3>
+
+            <div class="decision-point">
+                <h4>The Problem We're Solving</h4>
+                <p>You're running 10,000 servers in production. Each server needs monitoring—CPU usage, memory consumption, disk I/O, network traffic. Without a monitoring system, you're flying blind when things go wrong.</p>
+
+                <h4>What the System Must Do (Functional)</h4>
+                <ul>
+                    <li><strong>Collect metrics from 10,000 servers</strong> - Every server sends data every 10 seconds</li>
+                    <li><strong>Calculate: 10K servers × 10 metrics × 6 collections/min</strong> = 600K data points per minute sustained</li>
+                    <li><strong>Store everything for 30 days</strong> - Engineers need to look back when debugging</li>
+                    <li><strong>Show live dashboards</strong> - See what's happening right now (<1 second lag)</li>
+                    <li><strong>Send alerts</strong> - Page someone when CPU hits 80% for 5 minutes straight</li>
+                    <li><strong>Support historical queries</strong> - "What was CPU doing last Tuesday at 3pm?"</li>
+                </ul>
+
+                <h4>How Well It Must Perform (Non-Functional)</h4>
+                <ul>
+                    <li><strong>Throughput:</strong> Handle 100K metrics/sec sustained (10× current load for growth)</li>
+                    <li><strong>Availability:</strong> 99.9% uptime = max 43 minutes downtime per month</li>
+                    <li><strong>Latency:</strong> Dashboard shows data within 1 second of collection</li>
+                    <li><strong>Scalability:</strong> Add servers by scaling horizontally (no redesign needed)</li>
+                </ul>
+
+                <h4>Real-World Constraints</h4>
+                <ul>
+                    <li><strong>Network reality:</strong> Agents run behind firewalls → must use push model (agents initiate connections)</li>
+                    <li><strong>Storage economics:</strong> 100K metrics/sec × 30 days = 259 billion data points → need compression</li>
+                    <li><strong>Team size:</strong> Small engineering team (2-3 people) → system must be operationally simple</li>
+                    <li><strong>Cost:</strong> Self-hosted should be significantly cheaper than SaaS ($10K+/month for this scale)</li>
+                </ul>
+            </div>
+
+            <h3>Step 2: High-Level System Architecture</h3>
+
+            <div style="background: #2a2a2a; border-radius: 12px; padding: 30px; margin: 20px 0;">
+
+                <!-- Layer 1: Monitoring Agents -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: #fff; color: #667eea; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; margin-right: 15px;">1</div>
+                        <h4 style="color: #fff; margin: 0; font-size: 1.2em;">MONITORING AGENTS</h4>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; color: #fff; font-size: 0.9em;">10,000 servers</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">Server 1</div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">Server 2</div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">Server 3</div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">... 10K</div>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; line-height: 1.6;">
+                        <strong>Collect every 10 seconds:</strong><br>
+                        • CPU usage, memory, disk I/O<br>
+                        • Network traffic, process count<br>
+                        • Custom application metrics
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+                <div style="text-align: center; color: #95a5a6; font-size: 0.95em; margin-bottom: 15px;">
+                    <strong>HTTP POST (JSON)</strong><br>
+                    10 metrics/server × 10K servers = <span style="color: #3498db; font-weight: bold;">100K metrics/sec</span>
+                </div>
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+
+                <!-- Layer 2: Ingestion Service (IMPLEMENTED) -->
+                <div style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 0 20px rgba(39,174,96,0.3);">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: #fff; color: #27ae60; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; margin-right: 15px;">2</div>
+                        <h4 style="color: #fff; margin: 0; font-size: 1.2em;">INGESTION SERVICE</h4>
+                        <span style="margin-left: auto; background: #fff; padding: 5px 12px; border-radius: 20px; color: #27ae60; font-weight: bold; font-size: 0.9em;">✅ Phase 1-7 Complete</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px; color: #fff; text-align: center;">
+                        <strong>Load Balancer</strong> (Round-robin)
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 5px; color: #fff; font-size: 0.85em;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">Server 1</div>
+                            <div style="color: #f1c40f;">2,253 RPS</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 5px; color: #fff; font-size: 0.85em;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">Server 2</div>
+                            <div style="color: #f1c40f;">2,253 RPS</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 5px; color: #fff; font-size: 0.85em;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">... Server 20</div>
+                            <div style="color: #f1c40f;">2,253 RPS</div>
+                        </div>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; line-height: 1.6;">
+                        <strong>Features:</strong> HTTP server, rate limiting, JSON parsing, thread pool, async I/O<br>
+                        <strong>Performance:</strong> <span style="color: #f1c40f; font-weight: bold;">2,253 RPS per server @ 100% success</span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+                <div style="text-align: center; color: #95a5a6; font-size: 0.95em; margin-bottom: 15px;">Forward to message queue</div>
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+
+                <!-- Layer 3: Message Queue -->
+                <div style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: #fff; color: #e67e22; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; margin-right: 15px;">3</div>
+                        <h4 style="color: #fff; margin: 0; font-size: 1.2em;">MESSAGE QUEUE</h4>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; color: #fff; font-size: 0.9em;">Phase 8: Planned</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin-bottom: 12px; color: #fff;">
+                        <strong style="font-size: 1.05em;">Apache Kafka</strong><br>
+                        <span style="font-size: 0.9em; color: rgba(255,255,255,0.9);">3 brokers, 12 partitions</span>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; line-height: 1.6;">
+                        • Partitioning: Hash(client_id) for load distribution<br>
+                        • Retention: 7 days for replay capability<br>
+                        • Decouples ingestion from processing<br>
+                        • Acts as buffer during processing failures
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+
+                <!-- Layer 4: Stream Processing -->
+                <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: #fff; color: #3498db; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; margin-right: 15px;">4</div>
+                        <h4 style="color: #fff; margin: 0; font-size: 1.2em;">STREAM PROCESSING</h4>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; color: #fff; font-size: 0.9em;">Phase 9: Planned</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin-bottom: 12px; color: #fff;">
+                        <strong style="font-size: 1.05em;">Apache Flink</strong><br>
+                        <span style="font-size: 0.9em; color: rgba(255,255,255,0.9);">12 workers</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">
+                            <strong>1-min windows</strong><br>avg, p95, p99
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">
+                            <strong>Anomaly detect</strong><br>CPU spike >80%
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 5px; text-align: center; color: #fff; font-size: 0.85em;">
+                            <strong>Aggregations</strong><br>by host, type
+                        </div>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; line-height: 1.6;">
+                        <strong>Outputs:</strong><br>
+                        • Raw metrics → Storage (all data points)<br>
+                        • Aggregated metrics → Storage (1-min summaries)<br>
+                        • Alerts → Notification service (threshold violations)
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+
+                <!-- Layer 5: Storage -->
+                <div style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: #fff; color: #9b59b6; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; margin-right: 15px;">5</div>
+                        <h4 style="color: #fff; margin: 0; font-size: 1.2em;">TIME-SERIES STORAGE</h4>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; color: #fff; font-size: 0.9em;">Phase 10: Planned</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin-bottom: 12px; color: #fff;">
+                        <strong style="font-size: 1.05em;">InfluxDB Cluster</strong><br>
+                        <span style="font-size: 0.9em; color: rgba(255,255,255,0.9);">3 nodes</span>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; line-height: 1.6;">
+                        <strong>Retention policies:</strong><br>
+                        • Raw data: 30 days (100K writes/sec)<br>
+                        • 1-min aggregates: 1 year (1.6K writes/sec)<br>
+                        • 1-hour aggregates: 5 years (27 writes/sec)<br><br>
+                        <strong>Why InfluxDB?</strong> Time-series optimized, 10:1 compression, built-in downsampling
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #3498db; font-size: 1.8em; margin: 15px 0;">↓</div>
+
+                <!-- Layer 6: Visualization -->
+                <div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); border-radius: 10px; padding: 20px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: #fff; color: #e74c3c; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; margin-right: 15px;">6</div>
+                        <h4 style="color: #fff; margin: 0; font-size: 1.2em;">VISUALIZATION & ALERTING</h4>
+                        <span style="margin-left: auto; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; color: #fff; font-size: 0.9em;">Phase 11: Planned</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin-bottom: 12px; color: #fff;">
+                        <strong style="font-size: 1.05em;">Grafana Dashboards + Alert Manager</strong>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; line-height: 1.6;">
+                        • Real-time charts (last 1 hour, 1 day, 1 week)<br>
+                        • Custom dashboards per team/service<br>
+                        • Alert rules with PagerDuty/Slack integration<br>
+                        • Threshold violations (CPU > 80% for 5 min)<br>
+                        • Anomaly detection & alert aggregation
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div style="margin-top: 30px; background: #1e1e1e; border-left: 4px solid #3498db; padding: 20px; border-radius: 5px;">
+                    <div style="color: #3498db; font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">📊 Data Flow Summary</div>
+                    <div style="color: #95a5a6; font-size: 1em; font-family: monospace; line-height: 1.8;">
+                        Agents → Ingestion → Kafka → Flink → InfluxDB → Grafana<br>
+                        <span style="color: #27ae60; font-weight: bold;">         ↑ We are here (Phase 1-7 complete)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 20px;">
+                <h4>🎓 Design Principles</h4>
+                <ul>
+                    <li><strong>Decouple components:</strong> Message queue separates ingestion from processing—if Flink crashes, Kafka buffers data</li>
+                    <li><strong>Horizontal scaling:</strong> Each layer scales independently (add more ingestion servers, Flink workers, etc.)</li>
+                    <li><strong>Data retention tiers:</strong> Store raw data short-term, aggregates long-term (saves storage cost)</li>
+                    <li><strong>Push model:</strong> Agents push metrics (simpler than pull, works behind NAT/firewalls)</li>
+                </ul>
+            </div>
+
+            <h3>Step 3: Capacity Planning from Measured Results</h3>
+
+            <div class="toggle-container" style="margin: 20px 0;">
+                <button class="show-solution-btn" onclick="toggleArchitecture('phase0')" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                    📊 Show Capacity Calculation Flow
+                </button>
+            </div>
+
+            <div id="phase0-before" class="architecture-flow active">
+                <div class="command">$ ./build/load_test_persistent 8080 100 100 5000
+Success Rate: 100.00%
+Throughput: 2,253 RPS
+Avg Latency: 0.25ms
+Resource Usage: 45% CPU, 150MB memory</div>
+            </div>
+
+            <div id="phase0-after" class="architecture-flow" style="display: none;">
+                <h4 style="color: #9b59b6; text-align: center; font-size: 1.3em; margin-bottom: 20px;">📊 Capacity Calculation Flow</h4>
+                <div style="background: #2a2a2a; border-radius: 10px; padding: 25px; border: 2px solid #9b59b6;">
+
+                    <div style="background: #1e1e1e; border: 2px solid #3498db; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                        <div style="color: #3498db; font-weight: bold; margin-bottom: 8px;">
+                            <span style="display: inline-block; background: #3498db; color: #fff; width: 25px; height: 25px; border-radius: 50%; text-align: center; line-height: 25px; margin-right: 8px;">1</span>
+                            Measure Current Performance
+                        </div>
+                        <div style="color: #95a5a6; font-size: 0.9em;">
+                            <code style="background: #0a0a0a; padding: 2px 6px; border-radius: 3px;">2,253 RPS @ 45% CPU, 150MB memory</code>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; color: #9b59b6; font-size: 1.5em; margin: 10px 0;">↓</div>
+
+                    <div style="background: #1e1e1e; border: 2px solid #e67e22; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                        <div style="color: #e67e22; font-weight: bold; margin-bottom: 8px;">
+                            <span style="display: inline-block; background: #e67e22; color: #fff; width: 25px; height: 25px; border-radius: 50%; text-align: center; line-height: 25px; margin-right: 8px;">2</span>
+                            Estimate CPU Headroom (Conservative)
+                        </div>
+                        <div style="color: #95a5a6; font-size: 0.9em;">
+                            Current: 2,253 RPS @ 45% CPU<br>
+                            <span style="color: #f39c12;">⚠️ Naive calculation:</span> 2,253 × (90 / 45) = 5,000 RPS (assumes linear)<br>
+                            <span style="color: #e67e22; font-weight: bold;">Realistic estimate:</span> 2,253 × 1.6 = <strong style="color: #e67e22;">~3,600 RPS</strong><br>
+                            <span style="color: #7f8c8d; font-size: 0.85em;">(Accounting for context switching, cache misses, lock contention)</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; color: #9b59b6; font-size: 1.5em; margin: 10px 0;">↓</div>
+
+                    <div style="background: #1e1e1e; border: 2px solid #27ae60; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                        <div style="color: #27ae60; font-weight: bold; margin-bottom: 8px;">
+                            <span style="display: inline-block; background: #27ae60; color: #fff; width: 25px; height: 25px; border-radius: 50%; text-align: center; line-height: 25px; margin-right: 8px;">3</span>
+                            Calculate Horizontal Scaling
+                        </div>
+                        <div style="color: #95a5a6; font-size: 0.9em;">
+                            Target: 100K metrics/sec<br>
+                            Per-server capacity: 3,600 RPS (conservative)<br>
+                            Servers needed (theory): 100K / 3.6K = 28 servers<br>
+                            <strong style="color: #27ae60;">Production deployment: 35-40 servers</strong><br>
+                            <span style="color: #7f8c8d; font-size: 0.85em;">(+25% overhead for load balancer, failures, hot partitions)</span>
+                        </div>
+                    </div>
+
+                    <div style="background: #3a2a1f; border-left: 4px solid #f39c12; padding: 15px; margin-top: 20px; border-radius: 5px;">
+                        <div style="color: #f39c12; font-weight: bold; margin-bottom: 8px;">⚠️ Real-World Reality:</div>
+                        <div style="color: #95a5a6; font-size: 0.9em;">
+                            • CPU scaling is <strong>never</strong> linear (context switching, cache misses increase)<br>
+                            • Load balancers add 5-15% overhead<br>
+                            • Hot partitions reduce effective capacity by 10-20%<br>
+                            • Always provision 25-50% overhead for failures and degradation<br>
+                            <br>
+                            <strong style="color: #fff;">Lesson:</strong> Measure in production. Localhost tests are starting points, not guarantees.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lab-section">
+                <h4>🔬 Lab 0: Design Exercise</h4>
+                <p><strong>Task:</strong> Design your message queue selection process</p>
+
+                <ol>
+                    <li>Compare Kafka vs RabbitMQ for 100K msg/sec throughput</li>
+                    <li>Research actual benchmark numbers (not vendor claims)</li>
+                    <li>Document trade-offs in a decision matrix</li>
+                </ol>
+
+                <h5>Expected Outcome</h5>
+                <div class="success-box">
+                    <p>A simple comparison table with:</p>
+                    <ul>
+                        <li>Measured throughput numbers</li>
+                        <li>Operational complexity assessment</li>
+                        <li>Your justified recommendation</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- We'll add Phase 1-7 content here in the next section -->
         <div class="content-panel" id="phase1">
             <h2>Phase 1: Thread-Per-Request Model</h2>
             <p style="font-size: 1.2em; color: #7f8c8d; margin-bottom: 30px;">
@@ -864,39 +1191,27 @@ $ ./build/load_test 8080 20 10</div>
             </div>
 
             <div class="lab-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin: 25px 0;">
-                <h4 style="color: #fff; margin-bottom: 15px;">📝 Starter Templates for Hands-On Practice</h4>
-                <p style="color: #f0f0f0; margin-bottom: 15px;">We've created starter code templates to help you learn by doing (no blank page paralysis!):</p>
+                <h4 style="color: #fff; margin-bottom: 15px;">🌿 Git Branches for Hands-On Practice</h4>
+                <p style="color: #f0f0f0; margin-bottom: 15px;">We've created git branches so you can practice each phase progressively:</p>
 
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin: 10px 0;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ cd templates/</div>
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ g++ -std=c++17 -pthread craft1_phase1_starter.cpp -o phase1</div>
-                    <p style="color: #fff; margin: 0; font-size: 0.9em;">📝 <strong>Starter code:</strong> Boilerplate provided + TODO(human) markers showing where YOU implement</p>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ git checkout phase-1-starter</div>
+                    <p style="color: #fff; margin: 0; font-size: 0.9em;">📝 <strong>Starter code:</strong> Phase 0 complete (sequential) + TODOs for you to implement threading</p>
                 </div>
 
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin: 10px 0;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ cat templates/README.md</div>
-                    <p style="color: #fff; margin: 0; font-size: 0.9em;">📖 <strong>Usage guide:</strong> Complete instructions, expected results, and learning takeaways</p>
-                </div>
-
-                <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin: 10px 0;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ cat src/http_server.cpp</div>
-                    <p style="color: #fff; margin: 0; font-size: 0.9em;">✅ <strong>Reference solution:</strong> Compare your implementation with production code in src/</p>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ git checkout phase-1-solution</div>
+                    <p style="color: #fff; margin: 0; font-size: 0.9em;">✅ <strong>Reference solution:</strong> Complete Phase 1 implementation to compare against</p>
                 </div>
 
                 <p style="color: #f0f0f0; margin-top: 15px; font-size: 0.9em;"><strong>Recommended workflow:</strong></p>
                 <ol style="color: #f0f0f0; font-size: 0.9em; margin-left: 20px;">
-                    <li>Copy <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">templates/craft1_phase1_starter.cpp</code></li>
-                    <li>Read TODO(human) comments - they guide what to implement</li>
-                    <li>Implement the optimization following inline hints</li>
-                    <li>Compile & test: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">./phase1</code></li>
-                    <li>Measure: Expected ~200 RPS (vs ~50 baseline)</li>
-                    <li>Compare with <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">src/</code> solution when done</li>
+                    <li>Checkout <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">phase-1-starter</code></li>
+                    <li>Read the TODO comments in <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">src/http_server.cpp</code></li>
+                    <li>Implement threading following hints</li>
+                    <li>Test with load_test and measure performance</li>
+                    <li>Compare with <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">phase-1-solution</code> when done</li>
                 </ol>
-
-                <p style="color: #f0f0f0; margin-top: 15px; font-size: 0.9em;">
-                    <strong>Available templates:</strong> Phase 1 (threading), Phase 2 (async I/O), Phase 3 (parser optimization) |
-                    <a href="https://github.com/kapil0x/systems-craft/tree/main/templates" target="_blank" style="color: #3498db; text-decoration: underline;">View on GitHub →</a>
-                </p>
             </div>
 
             <h3>Architecture Evolution</h3>
@@ -1017,15 +1332,11 @@ $ ./build/load_test 8080 20 10</div>
                 <h5>🎨 Additional Learning Resources</h5>
                 <p><strong>Interactive Visualizations:</strong></p>
                 <ul>
-                    <li><a href="docs/metric_transformation_visual.html" target="_blank" style="color: #3498db; font-weight: bold;">📊 Metric Journey: User → Storage</a> - See how a metric transforms through all 7 stages (NEW!)</li>
-                    <li><a href="docs/phase8_architecture_visual.html" target="_blank" style="color: #3498db; font-weight: bold;">⚡ Phase 8: Blocking vs Event-Driven</a> - 5-tab interactive comparison (NEW!)</li>
                     <li><a href="learning-resources/visualizations/request_flow_visual.html" target="_blank" style="color: #3498db; font-weight: bold;">Request Flow Visualization</a> - Phase 6 & 7 (Thread Pool + HTTP Keep-Alive)</li>
                     <li><a href="learning-resources/visualizations/event_driven_architecture.html" target="_blank" style="color: #3498db; font-weight: bold;">Event-Driven Architecture</a> - Compare with thread-based model</li>
                 </ul>
                 <p><strong>Deep Dive Concepts:</strong></p>
                 <ul>
-                    <li><a href="docs/end_to_end_flow.md" target="_blank" style="color: #3498db;">📖 End-to-End Flow Guide</a> - Complete technical documentation with Python, C++, SQL examples (NEW!)</li>
-                    <li><a href="docs/blocking_io_explained.html" target="_blank" style="color: #3498db;">🔒 Blocking I/O Explained</a> - Why blocking wastes CPU (with animations!)</li>
                     <li><a href="learning-resources/concepts/connection_explained.txt" target="_blank" style="color: #3498db;">TCP Connection Mechanics</a> - Listen backlog & kernel queues</li>
                     <li><a href="learning-resources/concepts/queue_drain_explained.txt" target="_blank" style="color: #3498db;">Queue Draining Behavior</a> - Producer-consumer patterns</li>
                 </ul>
@@ -1065,7 +1376,7 @@ $ ./build/load_test 8080 20 10</div>
 
                     <div class="command" style="background: #2c3e50; color: #ecf0f1; margin: 15px 0;">
 # Start with Phase 1 starter (has Phase 0 baseline + TODOs)
-$ Use template: templates/craft1_phase1_starter.cpp
+$ git checkout phase-1-starter
 
 # Build and see the sequential baseline
 $ mkdir -p build
@@ -1079,11 +1390,11 @@ $ ./build/load_test 8080 20 10
 
                     <p style="color: #fff; margin-top: 15px;"><strong>📝 Your Task:</strong> Open <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">src/http_server.cpp</code> and read the TODO comments. Implement thread-per-request pattern yourself!</p>
 
-                    <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 0.9em;">When done, compare your implementation with: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">Compare with: src/ (production code)</code></p>
+                    <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 0.9em;">When done, compare your implementation with: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">git checkout phase-1-solution</code></p>
                 </div>
 
                 <h5>Step 2: Understand the Sequential Baseline</h5>
-                <p>The <code>templates/craft1_phase1_starter.cpp</code> file contains the Phase 0 sequential implementation as your starting point. Here's what you're starting with:</p>
+                <p>The <code>phase-1-starter</code> branch contains the Phase 0 sequential implementation. Here's what you're starting with:</p>
 
                 <h5>Step 3: Sequential Baseline Code</h5>
                 <div class="code-block"><pre><span class="comment">// src/http_server.cpp - PHASE 0: Sequential implementation (for reference)</span>
@@ -1598,12 +1909,12 @@ $ ./build/load_test 8080 100 10
                 <h4 style="color: #fff; margin-bottom: 15px;">🌿 Git Branches for Phase 2</h4>
 
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin: 10px 0;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ Use template: templates/craft1_phase2_starter.cpp</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ git checkout phase-2-starter</div>
                     <p style="color: #fff; margin: 0; font-size: 0.9em;">📝 <strong>Starter:</strong> Phase 1 complete (threading) - ready for you to add async I/O</p>
                 </div>
 
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin: 10px 0;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ Compare with: src/ (production code)</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin-bottom: 10px;">$ git checkout phase-2-solution</div>
                     <p style="color: #fff; margin: 0; font-size: 0.9em;">✅ <strong>Solution:</strong> Complete async I/O with producer-consumer queue</p>
                 </div>
 
@@ -1788,11 +2099,11 @@ I/O Thread: Write batch (5ms) → Write batch...</pre>
             <div class="lab-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin: 25px 0;">
                 <h4 style="color: #fff; margin-bottom: 10px;">🌿 Git Branches</h4>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Use template: templates/craft1_phase3_starter.cpp</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-3-starter</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Phase 2 code + space for optimization</p>
                 </div>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Compare with: src/ (production code)</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-3-solution</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Optimized JSON parser implementation</p>
                 </div>
             </div>
@@ -2010,11 +2321,11 @@ MetricBatch IngestionService::<span class="function">parse_json_metrics_optimize
             <div class="lab-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin: 25px 0;">
                 <h4 style="color: #fff; margin-bottom: 10px;">🌿 Git Branches</h4>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Use template: templates/craft1_phase4_starter.cpp</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-4-starter</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Phase 3 code + single global mutex</p>
                 </div>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Compare with: src/ (production code)</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-4-solution</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Hash-based mutex pool (10K mutexes)</p>
                 </div>
             </div>
@@ -2192,11 +2503,11 @@ Contention: ~6% (only same-hash collisions)</pre>
             <div class="lab-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin: 25px 0;">
                 <h4 style="color: #fff; margin-bottom: 10px;">🌿 Git Branches</h4>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Use template: templates/craft1_phase5_starter.cpp</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-5-starter</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Phase 4 code with thread-per-request</p>
                 </div>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Compare with: src/ (production code)</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-5-solution</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Thread pool with worker queue</p>
                 </div>
             </div>
@@ -2429,11 +2740,11 @@ Overhead: ~1μs to queue task (99% reduction!)</pre>
             <div class="lab-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin: 25px 0;">
                 <h4 style="color: #fff; margin-bottom: 10px;">🌿 Git Branches</h4>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Use template: templates/craft1_phase6_starter.cpp</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-6-starter</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Phase 5 code with mutex-based metrics</p>
                 </div>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Compare with: src/ (production code)</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-6-solution</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Lock-free ring buffer with atomics</p>
                 </div>
             </div>
@@ -2634,11 +2945,11 @@ Contention: None (single writer/reader)</pre>
             <div class="lab-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; margin: 25px 0;">
                 <h4 style="color: #fff; margin-bottom: 10px;">🌿 Git Branches</h4>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Use template: templates/craft1_phase7_starter.cpp</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-7-starter</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">Phase 6 code, one conn per request</p>
                 </div>
                 <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">Compare with: src/ (production code)</div>
+                    <div class="command" style="background: rgba(0,0,0,0.3); margin: 0; flex: 0 0 220px;">git checkout phase-7-solution</div>
                     <p style="color: #fff; margin: 0; font-size: 0.85em;">HTTP Keep-Alive + 10K listen backlog (2,253 RPS!)</p>
                 </div>
             </div>
@@ -2846,184 +3157,53 @@ Backlog: 1024 (handles 100 simultaneous)</pre>
                     <li><strong>Optimize:</strong> Implement targeted solution</li>
                     <li><strong>Verify:</strong> Measure again to confirm improvement</li>
                 </ol>
-                <p style="margin-top: 15px;">The codebase contains full implementations of all phases. You can explore the code, read documentation, and see the progressive optimization journey from 88% → 100% success rate at 2,253 RPS, and then the quantum leap to 145,348 RPS with event-driven I/O in Phase 8.</p>
+                <p style="margin-top: 15px;">The codebase contains full implementations of all 7 phases. You can explore the code, read documentation, and see the progressive optimization journey from 88% → 100% success rate.</p>
             </div>
         </div>
 
-        <!-- Phase 8 Panel -->
-        <div class="content-panel" id="phase8">
-            <h2>⚡ Phase 8: Event-Driven Architecture with epoll</h2>
+        <div class="content-panel" id="future">
+            <h2>🔮 Future Milestones: Complete the Platform</h2>
 
-            <div class="success-box" style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px;">🎉 Spectacular Results: 64x Performance Increase!</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 2.5em; font-weight: bold; color: #27ae60;">145,348</div>
-                        <div style="margin-top: 5px; opacity: 0.9;">RPS (vs 2,253)</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 2.5em; font-weight: bold; color: #27ae60;">100%</div>
-                        <div style="margin-top: 5px; opacity: 0.9;">Success Rate</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 2.5em; font-weight: bold; color: #27ae60;">1000+</div>
-                        <div style="margin-top: 5px; opacity: 0.9;">Concurrent Clients</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 2.5em; font-weight: bold; color: #27ae60;">4.8ms</div>
-                        <div style="margin-top: 5px; opacity: 0.9;">Avg Latency @ 1000</div>
-                    </div>
-                </div>
-            </div>
-
-            <h3>The Fundamental Shift: Blocking → Event-Driven I/O</h3>
-            <p style="margin: 15px 0; line-height: 1.8;">
-                Phase 8 represents a <strong>fundamental architectural transformation</strong> from blocking I/O to event-driven programming using Linux's <code>epoll</code>.
-                Instead of dedicating one thread per connection (which wastes 80% of CPU time waiting for I/O), we use a single event loop to monitor thousands of connections
-                and only process when data is actually ready.
-            </p>
-
-            <div class="info-box" style="margin: 20px 0;">
-                <h4>What Changed</h4>
-                <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: rgba(0,0,0,0.1);">
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid rgba(0,0,0,0.2);">Aspect</th>
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid rgba(0,0,0,0.2);">Phase 7 (Blocking)</th>
-                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid rgba(0,0,0,0.2);">Phase 8 (Event-Driven)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);"><strong>I/O Model</strong></td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Blocking accept(), read(), write()</td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">Non-blocking with epoll event notification</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);"><strong>Threads</strong></td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">1 accept thread + 16 workers</td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">1 event loop + 16 workers (CPU only)</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);"><strong>Memory/Connection</strong></td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">8 MB (thread stack)</td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">4 KB (connection state)</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);"><strong>Event Notification</strong></td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">O(n) thread wake-ups</td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">O(1) epoll_wait()</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px;"><strong>CPU Efficiency</strong></td>
-                            <td style="padding: 10px;">~20% (80% blocked waiting)</td>
-                            <td style="padding: 10px;">~95% (only work when ready)</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h3>Implementation Deep Dive</h3>
-
-            <h4>New Components</h4>
-            <div class="code-block">
-<span class="comment">// Event Loop with epoll (src/event_loop.cpp)</span>
-class EventLoop {
-    int epoll_fd_;
-    std::unordered_map&lt;int, std::unique_ptr&lt;Connection&gt;&gt; connections_;
-    std::unique_ptr&lt;ThreadPool&gt; thread_pool_;
-
-    void event_loop(int listen_fd) {
-        while (running_) {
-            <span class="highlight">// Wait for events - DOES NOT BLOCK resources!</span>
-            int nfds = epoll_wait(epoll_fd_, events, MAX_EVENTS, timeout);
-
-            for (int i = 0; i &lt; nfds; i++) {
-                if (events[i].data.fd == listen_fd) {
-                    handle_accept(listen_fd);  <span class="comment">// Non-blocking!</span>
-                } else {
-                    handle_read(events[i].data.fd);  <span class="comment">// Data ready!</span>
-                }
-            }
-        }
-    }
-};</div>
-
-            <h4>Key Features Implemented</h4>
-            <ul style="margin: 15px 0; line-height: 1.8;">
-                <li><strong>Non-blocking sockets:</strong> Set <code>O_NONBLOCK</code> flag on all sockets</li>
-                <li><strong>Edge-triggered epoll:</strong> <code>EPOLLET</code> flag for maximum efficiency</li>
-                <li><strong>HTTP request parsing:</strong> Proper boundary detection (<code>\r\n\r\n</code>) and Content-Length handling</li>
-                <li><strong>Connection state management:</strong> Track partial requests, keep-alive status</li>
-                <li><strong>Hybrid architecture:</strong> Event loop for I/O, thread pool for CPU work</li>
-            </ul>
-
-            <h3>Performance Benchmarks</h3>
-            <div class="code-block">
-<span class="comment"># Test 1: Light load (20 clients, 50 req each)</span>
-./build/load_test_persistent 8080 20 50 1000
-<span class="highlight">Result: 9,900 RPS, 100% success, 0.16ms latency</span>
-
-<span class="comment"># Test 2: Medium load (50 clients, 100 req each)</span>
-./build/load_test_persistent 8080 50 100 1000
-<span class="highlight">Result: 24,630 RPS, 100% success, 0.17ms latency</span>
-
-<span class="comment"># Test 3: High load (100 clients, 100 req each)</span>
-./build/load_test_persistent 8080 100 100 1000
-<span class="highlight">Result: 45,454 RPS, 100% success, 0.42ms latency</span>
-
-<span class="comment"># Test 4: Very high load (200 clients, 100 req each)</span>
-./build/load_test_persistent 8080 200 100 1000
-<span class="highlight">Result: 83,682 RPS, 100% success, 0.55ms latency</span>
-
-<span class="comment"># Test 5: Extreme load (500 clients, 100 req each)</span>
-./build/load_test_persistent 8080 500 100 1000
-<span class="highlight">Result: 137,362 RPS, 100% success, 1.66ms latency</span>
-
-<span class="comment"># Test 6: Maximum stress (1000 clients, 100 req each)</span>
-./build/load_test_persistent 8080 1000 100 1000
-<span class="highlight">Result: 145,348 RPS, 100% success, 4.81ms latency ✅</span>
-
-<span class="comment"># Zero failures across all 186,000 test requests!</span></div>
-
-            <div class="success-box" style="margin-top: 30px;">
-                <h4>What You Learned</h4>
-                <ul>
-                    <li><strong>Event-Driven Programming:</strong> The reactor pattern and how epoll achieves O(1) scalability</li>
-                    <li><strong>Non-blocking I/O:</strong> Why blocking wastes CPU and how to avoid it</li>
-                    <li><strong>C10K Problem:</strong> How to handle 10,000+ concurrent connections on commodity hardware</li>
-                    <li><strong>Hybrid Architecture:</strong> Combining event loops (for I/O) with thread pools (for CPU work)</li>
-                    <li><strong>HTTP Parsing:</strong> Request boundary detection and incremental parsing</li>
-                    <li><strong>Memory Efficiency:</strong> 2000x reduction in memory per connection (8MB → 4KB)</li>
+            <div class="info-box" style="background: #1a1a2e; border-left: 4px solid #3498db; margin-bottom: 30px;">
+                <h4 style="color: #3498db; margin-bottom: 15px;">Milestone 2: Message Queue Integration</h4>
+                <p style="color: #ecf0f1; margin-bottom: 10px;"><strong>Goal:</strong> Replace file I/O with Kafka for distributed, scalable ingestion</p>
+                <ul style="color: #bdc3c7;">
+                    <li>Apache Kafka setup and partitioning strategy</li>
+                    <li>Producer optimizations (batching, compression, acks)</li>
+                    <li>Topic design and retention policies</li>
+                    <li>Monitoring and metrics for broker health</li>
                 </ul>
+                <p style="margin-top: 15px; color: #7f8c8d;"><strong>Expected Performance:</strong> 50K+ RPS per ingestion server, with horizontal scalability across Kafka partitions</p>
             </div>
 
-            <h4 style="margin-top: 20px;">Interactive Visualizations</h4>
-            <div class="info-box">
-                <ul>
-                    <li><a href="docs/phase8_architecture_visual.html" target="_blank" style="color: #f39c12;">Phase 8 Architecture Visual</a> - Interactive 5-tab comparison of blocking vs event-driven I/O</li>
-                    <li><a href="docs/blocking_io_explained.html" target="_blank" style="color: #f39c12;">Blocking I/O Deep Dive</a> - Why blocking wastes CPU cycles (with animations!)</li>
-                    <li><a href="docs/metric_transformation_visual.html" target="_blank" style="color: #f39c12;">Metric Journey Visualization</a> - See how a metric transforms through all 7 stages from user app → storage</li>
-                    <li><a href="../phase8_results.md" target="_blank" style="color: #f39c12;">Phase 8 Detailed Results</a> - Complete performance analysis and architecture documentation</li>
-                    <li><a href="../docs/end_to_end_flow.md" target="_blank" style="color: #f39c12;">End-to-End Flow Guide</a> - Complete technical documentation of metric ingestion pipeline</li>
+            <div class="info-box" style="background: #1a1a2e; border-left: 4px solid #e67e22; margin-bottom: 30px;">
+                <h4 style="color: #e67e22; margin-bottom: 15px;">Milestone 3: Stream Processing</h4>
+                <p style="color: #ecf0f1; margin-bottom: 10px;"><strong>Goal:</strong> Real-time aggregations and alerting with Apache Flink</p>
+                <ul style="color: #bdc3c7;">
+                    <li>Flink streaming jobs for windowed aggregations</li>
+                    <li>Stateful stream processing with checkpointing</li>
+                    <li>Alert rules engine with threshold detection</li>
+                    <li>Event time vs processing time handling</li>
                 </ul>
+                <p style="margin-top: 15px; color: #7f8c8d;"><strong>Expected Capabilities:</strong> 1-minute aggregation windows, sub-second alert latency, exactly-once processing guarantees</p>
             </div>
 
-            <div class="warning-box" style="margin-top: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
-                <h4 style="color: white;">🚀 Why This Matters</h4>
-                <p style="margin: 15px 0; line-height: 1.8;">
-                    This is the <strong>exact architecture</strong> used by production systems at massive scale:
-                </p>
-                <ul style="line-height: 1.8;">
-                    <li><strong>nginx:</strong> Web server serving millions of requests/sec</li>
-                    <li><strong>Redis:</strong> In-memory database with 100K+ ops/sec</li>
-                    <li><strong>Node.js:</strong> JavaScript runtime for I/O-heavy applications</li>
-                    <li><strong>HAProxy:</strong> Load balancer handling massive concurrent traffic</li>
+            <div class="info-box" style="background: #1a1a2e; border-left: 4px solid #9b59b6;">
+                <h4 style="color: #9b59b6; margin-bottom: 15px;">Milestone 4: Storage & Visualization</h4>
+                <p style="color: #ecf0f1; margin-bottom: 10px;"><strong>Goal:</strong> Time-series storage and dashboards with InfluxDB + Grafana</p>
+                <ul style="color: #bdc3c7;">
+                    <li>InfluxDB schema design and retention policies</li>
+                    <li>Continuous queries for downsampling</li>
+                    <li>Grafana dashboards with variable templating</li>
+                    <li>Query optimization for time-series data</li>
                 </ul>
-                <p style="margin: 15px 0; line-height: 1.8;">
-                    You've now built the fundamental pattern that enables modern high-performance network services to scale to thousands of concurrent connections on a single machine.
-                    This is <strong>production-grade systems engineering</strong>.
-                </p>
+                <p style="margin-top: 15px; color: #7f8c8d;"><strong>Expected Capabilities:</strong> 30-day full retention, 1-year downsampled retention, sub-second query latency for recent data</p>
+            </div>
+
+            <div class="warning-box" style="margin-top: 30px;">
+                <h4>📚 Why Milestones Are Planned but Not Built Yet</h4>
+                <p>This project focuses on <strong>deep learning through implementation</strong> rather than breadth. Milestone 1 (Ingestion Layer) contains 7 optimization phases—each teaching concurrency, I/O, profiling, and performance analysis.</p>
+                <p style="margin-top: 10px;">Building all 4 milestones would create a complete monitoring platform, but the educational value is in <em>how you build it</em>, not just shipping features. Future milestones will be added as the foundation solidifies.</p>
             </div>
         </div>
 
@@ -3036,30 +3216,6 @@ class EventLoop {
                 <p><strong>Decision tree visualization will be embedded here.</strong></p>
                 <p>For now, view it separately at: <a href="docs/index.html" target="_blank">Decision Tree Visualization</a></p>
             </div>
-        </div>
-
-        <!-- Benchmark & Completion -->
-        <div style="background: linear-gradient(135deg, #fef5e7 0%, #fdeef0 100%); border-left: 4px solid #f39c12; padding: 30px; border-radius: 15px; margin-bottom: 40px;">
-            <h2 style="margin-bottom: 15px;">📊 Measure Your Performance</h2>
-            <p>Before marking as complete, run the benchmark tool to measure your implementation's throughput and latency.</p>
-            <a href="benchmark.html" style="display: inline-block; background: #f39c12; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 15px; margin-right: 15px; transition: all 0.3s ease;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'">
-                📈 Run Benchmark Tool
-            </a>
-            <p style="font-size: 0.9em; color: #555; margin-top: 15px;">
-                Get baseline measurements before optimization
-            </p>
-        </div>
-
-        <!-- Mark Completion -->
-        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border-left: 4px solid #27ae60; padding: 30px; border-radius: 15px; margin-bottom: 40px;">
-            <h2 style="margin-bottom: 15px;">✅ Completed This Craft?</h2>
-            <p>Mark your progress and track it on your progress dashboard.</p>
-            <button onclick="markCraftComplete('craft1')" style="background: #27ae60; border: none; color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; margin-top: 15px; transition: all 0.3s ease;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'">
-                ✓ Mark Craft #1 as Complete
-            </button>
-            <p style="font-size: 0.9em; color: #555; margin-top: 15px;">
-                Syncs to your progress dashboard if you're signed in
-            </p>
         </div>
 
         <div class="footer">
@@ -3128,66 +3284,6 @@ class EventLoop {
                 // Show after, hide before
                 beforeEl.style.display = 'none';
                 afterEl.style.display = 'block';
-            }
-        }
-    </script>
-
-    <!-- Firebase for Craft Completion -->
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
-
-    <script>
-        // Firebase Configuration (same as progress.html)
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "systems-craft.firebaseapp.com",
-            projectId: "systems-craft",
-            storageBucket: "systems-craft.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        let db = null;
-
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-        } catch (error) {
-            console.error("Firebase not configured - progress won't sync");
-        }
-
-        async function markCraftComplete(craftKey) {
-            // Save to localStorage (works offline)
-            const completedCrafts = JSON.parse(localStorage.getItem('completedCrafts') || '{}');
-            completedCrafts[craftKey] = {
-                completedAt: new Date().toISOString(),
-                markedComplete: true
-            };
-            localStorage.setItem('completedCrafts', JSON.stringify(completedCrafts));
-
-            // Try to sync to Firestore if user is logged in
-            if (db && firebase.auth().currentUser) {
-                try {
-                    const userId = firebase.auth().currentUser.uid;
-                    const docRef = db.collection('users').doc(userId);
-
-                    // Craft 1 has 8 phases
-                    await docRef.update({
-                        [`crafts.${craftKey}.completed`]: true,
-                        [`crafts.${craftKey}.phases`]: Array.from({length: 8}, (_, i) => i + 1),
-                        [`crafts.${craftKey}.completedAt`]: new Date()
-                    });
-
-                    console.log("✅ Progress saved to Firestore!");
-                    alert("🎉 Great job! Your progress has been saved to your dashboard.");
-                } catch (error) {
-                    console.error("Error saving to Firestore:", error);
-                    alert("✅ Marked as complete! (Sync with Firestore failed - see console)");
-                }
-            } else {
-                alert("✅ Marked as complete locally! Sign in to sync to your dashboard.");
-                console.log("To sync progress, visit: progress.html and sign in");
             }
         }
     </script>

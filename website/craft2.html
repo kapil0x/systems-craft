@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft #2: Distributed Message Queue - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            font-weight: 300;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        header .tagline {
+            font-size: 1.1em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .phase-nav {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 25px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .nav-section {
+            margin-bottom: 20px;
+        }
+
+        .nav-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .nav-section-title {
+            color: #7f8c8d;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 5px;
+            font-weight: 600;
+        }
+
+        .nav-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .phase-tab {
+            position: relative;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.85em;
+            color: #bdc3c7;
+            min-width: 100px;
+            backdrop-filter: blur(10px);
+        }
+
+        .phase-tab:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            color: #ecf0f1;
+        }
+
+        .phase-tab.active {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.5);
+            font-weight: 600;
+        }
+
+        .phase-tab .phase-number {
+            font-size: 1.1em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        .phase-tab .phase-label {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .phase-tab.active .phase-number,
+        .phase-tab.active .phase-label {
+            opacity: 1;
+        }
+
+        .phase-tab.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            color: #27ae60;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .phase-tab.active.completed::after {
+            color: #a3f7bf;
+        }
+
+        .content-panel {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 50px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.8em;
+            color: #34495e;
+            margin: 30px 0 15px 0;
+        }
+
+        h4 {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            margin: 20px 0 10px 0;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%);
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .info-box ul {
+            color: #2c3e50;
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .command {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 20px 0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .exercise-section {
+            background: linear-gradient(135deg, #fff3cd 0%, #fcf8e3 100%);
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .exercise-section h4 {
+            color: #d68910;
+            margin-top: 0;
+        }
+
+        .lab-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border-left: 4px solid #27ae60;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .perf-comparison {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .perf-comparison th {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .perf-comparison td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #555;
+        }
+
+        .perf-comparison tr:hover {
+            background: #f8f9fa;
+        }
+
+        ul, ol {
+            color: #555;
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        p {
+            color: #555;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" style="display: inline-block; color: #95a5a6; text-decoration: none; margin-bottom: 15px; font-size: 0.9em; transition: color 0.3s ease;" onmouseover="this.style.color='#ecf0f1'" onmouseout="this.style.color='#95a5a6'">
+                ← Back to Systems Craft
+            </a>
+            <div style="font-size: 0.9em; color: #95a5a6; margin-bottom: 10px; letter-spacing: 2px;">SYSTEMS CRAFT</div>
+            <h1>📤 Craft #2: Distributed Message Queue</h1>
+            <p class="subtitle">Build a Kafka-like message queue from first principles</p>
+            <p class="tagline">Compare file-based and Kafka architectures, understand threading bugs, and measure performance trade-offs</p>
+        </header>
+
+        <div class="phase-nav">
+            <!-- Getting Started -->
+            <div class="nav-section">
+                <div class="nav-section-title">📖 Getting Started</div>
+                <div class="nav-row">
+                    <div class="phase-tab active" onclick="showPhase('overview')">
+                        <span class="phase-number">📚</span>
+                        <span class="phase-label">Overview</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Queue Phases -->
+            <div class="nav-section">
+                <div class="nav-section-title">🚀 Building a Message Queue (~200 RPS)</div>
+                <div class="nav-row">
+                    <div class="phase-tab completed" onclick="showPhase('phase1')">
+                        <span class="phase-number">1</span>
+                        <span class="phase-label">File Queue</span>
+                    </div>
+                    <div class="phase-tab completed" onclick="showPhase('phase2')">
+                        <span class="phase-number">2</span>
+                        <span class="phase-label">Kafka Integration</span>
+                    </div>
+                    <div class="phase-tab" onclick="showPhase('phase3')">
+                        <span class="phase-number">3</span>
+                        <span class="phase-label">Distributed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What's Next -->
+            <div class="nav-section">
+                <div class="nav-section-title">🔮 What's Next</div>
+                <div class="nav-row">
+                    <div class="phase-tab" onclick="showPhase('future')">
+                        <span class="phase-number">🔮</span>
+                        <span class="phase-label">Future Crafts</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OVERVIEW -->
+        <div class="content-panel active" id="overview">
+            <h2>🎯 Building a Distributed Message Queue</h2>
+
+            <div class="lab-section" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); border: none; margin-bottom: 30px;">
+                <h3 style="color: #fff; margin-bottom: 15px;">🚀 Quick Start (5 minutes)</h3>
+
+                <div style="background: rgba(255,255,255,0.95); border-radius: 8px; padding: 20px; color: #2c3e50;">
+                    <h4 style="color: #27ae60; margin-bottom: 15px;">Step 1: Clone Repository</h4>
+                    <div class="command">git clone https://github.com/kapil0x/systems-craft.git
+cd systems-craft</div>
+
+                    <h4 style="color: #27ae60; margin-top: 20px; margin-bottom: 15px;">Step 2: Build Both Versions</h4>
+                    <div class="command">mkdir -p build && cd build
+cmake ..
+make metricstream_server queue_consumer load_test</div>
+
+                    <h4 style="color: #27ae60; margin-top: 20px; margin-bottom: 15px;">Step 3: Choose Your Mode</h4>
+                    <ul style="color: #34495e;">
+                        <li><strong>File-Based Mode:</strong> <code style="background: #ecf0f1; padding: 2px 6px;">./metricstream_server 8080 file</code></li>
+                        <li><strong>Kafka Mode:</strong> <code style="background: #ecf0f1; padding: 2px 6px;">./metricstream_server 8080 kafka localhost:9092 metrics</code></li>
+                        <li><strong>Load Test:</strong> <code style="background: #ecf0f1; padding: 2px 6px;">./load_test 8080 50 100</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>What You'll Learn</h3>
+            <ul>
+                <li><strong>Message Queue Fundamentals:</strong> Partitioning, offsets, producer/consumer patterns</li>
+                <li><strong>Performance Comparison:</strong> File-based (0.70ms) vs Kafka (0.15ms latency) - 4.6x improvement!</li>
+                <li><strong>Threading Bugs:</strong> Find and fix 4 critical bugs in concurrent systems</li>
+                <li><strong>Real Trade-offs:</strong> Simple vs complex, throughput vs latency, file I/O vs async batching</li>
+            </ul>
+
+            <h3>Current Status</h3>
+            <p><strong>Phase 1:</strong> ✅ File-based partitioned queue (complete)</p>
+            <p><strong>Phase 2:</strong> ✅ Kafka integration with threading fixes (complete)</p>
+            <p><strong>Phase 3:</strong> 📝 Distributed coordination planned</p>
+
+            <h3>Performance at Small Scale</h3>
+            <table class="perf-comparison">
+                <thead>
+                    <tr>
+                        <th>Mode</th>
+                        <th>Throughput</th>
+                        <th>Latency</th>
+                        <th>Success Rate</th>
+                        <th>Benefit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>File-based</strong></td>
+                        <td>~200 RPS</td>
+                        <td>0.70ms</td>
+                        <td>97.4%</td>
+                        <td>Simple, durable</td>
+                    </tr>
+                    <tr style="background: #d5f4e6;">
+                        <td><strong>Kafka</strong></td>
+                        <td>~200 RPS</td>
+                        <td>0.15ms (4.6x faster!)</td>
+                        <td>97.9%</td>
+                        <td>Lower latency, scalable</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHASE 1 -->
+        <div class="content-panel" id="phase1">
+            <h2>Phase 1: File-Based Partitioned Queue</h2>
+
+            <h3>What You'll Build</h3>
+            <div class="info-box">
+                <p>A simple queue that partitions metrics based on client_id. Each partition is a separate file directory with offset tracking.</p>
+                <ul>
+                    <li>4 partitions (partition-0 through partition-3)</li>
+                    <li>Hash-based routing: client_id → partition</li>
+                    <li>Sequential offsets per partition</li>
+                    <li>Producer and consumer implementations</li>
+                </ul>
+            </div>
+
+            <h3>📚 Architecture Overview</h3>
+            <p>In this phase, you'll understand:</p>
+            <ul>
+                <li>How messages are partitioned for parallel processing</li>
+                <li>What offsets do and why they matter</li>
+                <li>File I/O bottlenecks at scale</li>
+                <li>Producer/consumer decoupling patterns</li>
+            </ul>
+
+            <h3>🛠️ Hands-On Exercise</h3>
+            <div class="exercise-section">
+                <h4>Exercise 1: Build the File Queue</h4>
+                <p><strong>Goal:</strong> Understand how messages get partitioned</p>
+                <p><strong>Task:</strong> Look at <code>include/partitioned_queue.h</code> and implement:</p>
+                <div class="command">// Hash a client_id to a partition (0-3)
+int partition = client_id_hash % 4;
+
+// Write metric to queue/partition-X/OFFSET.msg
+// Track offset in queue/partition-X/offset.txt</div>
+                <p><strong>Expected Result:</strong> Messages from the same client always go to the same partition</p>
+            </div>
+
+            <div class="exercise-section">
+                <h4>Exercise 2: Implement the Consumer</h4>
+                <p><strong>Goal:</strong> Read from partitions in order</p>
+                <p><strong>Task:</strong> Create a consumer that:</p>
+                <ul>
+                    <li>Reads offset.txt to find starting position</li>
+                    <li>Reads messages sequentially</li>
+                    <li>Updates offset after each message</li>
+                </ul>
+                <p><strong>Key Insight:</strong> Offsets let you resume from where you left off after a crash</p>
+            </div>
+
+            <h3>📊 Performance Analysis</h3>
+            <p><strong>Measured Results:</strong></p>
+            <ul>
+                <li>Throughput: ~200 RPS (20 clients, 50 requests each)</li>
+                <li>Latency: 0.70ms average (file write bottleneck)</li>
+                <li>Success Rate: 97.4%</li>
+            </ul>
+
+            <h3>Key Learning</h3>
+            <p>File-based queues are simple and durable, but limited by disk I/O. Every write needs fsync() to be durable, making throughput bounded by disk speed. This teaches us why production systems need batching!</p>
+
+            <h3>Try It</h3>
+            <div class="command">./build/metricstream_server 8080 file
+# In another terminal:
+./build/load_test 8080 20 50</div>
+        </div>
+
+        <!-- PHASE 2 -->
+        <div class="content-panel" id="phase2">
+            <h2>Phase 2: Kafka Integration & Comparison</h2>
+
+            <h3>What You'll Build</h3>
+            <div class="info-box">
+                <p>A dual-mode ingestion service that switches between file-based and Kafka backends. You'll discover what Kafka optimizes for and what it costs.</p>
+                <ul>
+                    <li>Kafka producer wrapper (librdkafka integration)</li>
+                    <li>Kafka consumer with consumer groups</li>
+                    <li>Dual-mode architecture (QueueMode enum)</li>
+                    <li>Fix 4 critical threading bugs</li>
+                </ul>
+            </div>
+
+            <h3>🐛 Threading Bugs You'll Fix</h3>
+            <div class="exercise-section">
+                <h4>Bug #1: Race Condition</h4>
+                <p><strong>Problem:</strong> 16 HTTP workers access 1 shared KafkaProducer without synchronization</p>
+                <p><strong>Fix:</strong> Add std::mutex around all Kafka calls</p>
+                <div class="command">std::lock_guard<std::mutex> lock(producer_mutex_);
+producer_->produce(...);</div>
+            </div>
+
+            <div class="exercise-section">
+                <h4>Bug #2: Use-After-Free in Destructor</h4>
+                <p><strong>Problem:</strong> Messages still in-flight when producer is destroyed</p>
+                <p><strong>Fix:</strong> Call flush(10s) before cleanup, with polling loop</p>
+                <div class="command">// Wait up to 10 seconds for pending messages
+producer_->flush(std::chrono::milliseconds(10000));
+
+// Poll to check for completion
+while (producer_->outq_len() > 0) {
+    producer_->poll(100);
+}</div>
+            </div>
+
+            <div class="exercise-section">
+                <h4>Bug #3: No Retry Logic</h4>
+                <p><strong>Problem:</strong> ERR__QUEUE_FULL drops messages instead of retrying</p>
+                <p><strong>Fix:</strong> Retry with backoff when queue is full</p>
+                <div class="command">if (err == RdKafka::ERR__QUEUE_FULL) {
+    producer_->poll(10);  // Wait and retry
+    err = producer_->produce(...);  // Try again
+}</div>
+            </div>
+
+            <div class="exercise-section">
+                <h4>Bug #4: Message Lifetime Issues</h4>
+                <p><strong>Problem:</strong> Stack-allocated message data freed before send completes</p>
+                <p><strong>Fix:</strong> Use RK_MSG_COPY flag to copy message data</p>
+                <div class="command">std::string msg_str = metric_json;
+producer_->produce(
+    topic,
+    RdKafka::Topic::PARTITION_UA,
+    RdKafka::Producer::RK_MSG_COPY,  // Copy the data!
+    (void*)msg_str.c_str(),
+    msg_str.length()
+);</div>
+            </div>
+
+            <h3>🛠️ Hands-On Exercise</h3>
+            <div class="exercise-section">
+                <h4>Exercise: Build the KafkaProducer Wrapper</h4>
+                <p><strong>Goal:</strong> Understand thread-safe Kafka integration</p>
+                <p><strong>Task:</strong> Implement <code>KafkaProducer::produce()</code> that:</p>
+                <ul>
+                    <li>Locks mutex for thread safety</li>
+                    <li>Calls producer_->produce() with RK_MSG_COPY</li>
+                    <li>Polls for completion</li>
+                    <li>Handles ERR__QUEUE_FULL with retry</li>
+                    <li>Returns error codes</li>
+                </ul>
+            </div>
+
+            <h3>📊 Performance Analysis</h3>
+            <table class="perf-comparison">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>File-Based</th>
+                        <th>Kafka</th>
+                        <th>Improvement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Throughput</strong></td>
+                        <td>~200 RPS</td>
+                        <td>~200 RPS</td>
+                        <td>Same at small scale</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Latency</strong></td>
+                        <td>0.70ms</td>
+                        <td>0.15ms</td>
+                        <td>4.6x faster!</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Success Rate</strong></td>
+                        <td>97.4%</td>
+                        <td>97.9%</td>
+                        <td>More reliable</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scalability</strong></td>
+                        <td>Single machine</td>
+                        <td>Horizontal</td>
+                        <td>Multi-node capable</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Key Learning</h3>
+            <p>At small scale (~200 RPS), Kafka's main benefit is <strong>latency (4.6x faster)</strong>, not throughput. Kafka's throughput advantages (100K+ RPS) come with larger deployments, proper hardware, and tuning. This phase teaches why production systems justify the complexity: they optimize for different constraints.</p>
+
+            <h3>Try It</h3>
+            <div class="command"># First, start Kafka (requires Kafka installed)
+kafka-topics --create --bootstrap-server localhost:9092 \
+  --topic metrics --partitions 4 --replication-factor 1
+
+# Then run with Kafka backend
+./build/metricstream_server 8080 kafka localhost:9092 metrics
+./build/load_test 8080 20 50</div>
+        </div>
+
+        <!-- PHASE 3 -->
+        <div class="content-panel" id="phase3">
+            <h2>Phase 3: Distributed Coordination</h2>
+
+            <h3>📝 Planned Content</h3>
+            <div class="info-box">
+                <p>This phase will add the final piece: multi-machine coordination using ZooKeeper or Raft.</p>
+                <ul>
+                    <li>Leader election across multiple brokers</li>
+                    <li>Automatic rebalancing of partitions</li>
+                    <li>Replica management and failover</li>
+                    <li>Consumer group coordination</li>
+                </ul>
+            </div>
+
+            <h3>What You'll Learn</h3>
+            <ul>
+                <li>Consensus algorithms (Raft) and their trade-offs</li>
+                <li>Distributed consensus for reliability</li>
+                <li>Replication and fault tolerance</li>
+                <li>Multi-region deployment patterns</li>
+            </ul>
+
+            <p><strong>Status:</strong> Coming soon! Complete Phase 1 and Phase 2 first to understand the foundation.</p>
+        </div>
+
+        <!-- FUTURE CRAFTS -->
+        <div class="content-panel" id="future">
+            <h2>🔮 What's Next: Crafts #3-5</h2>
+
+            <h3>Craft #3: Time-Series Storage Engine</h3>
+            <p>Build an InfluxDB-like storage engine optimized for metrics:</p>
+            <ul>
+                <li>Write-ahead logs for durability</li>
+                <li>LSM tree storage for efficient reads</li>
+                <li>Time-series compression (Gorilla algorithm)</li>
+                <li>Tag-based indexing for fast queries</li>
+            </ul>
+
+            <h3>Craft #4: Query & Aggregation Engine</h3>
+            <p>Build a PromQL-like query processor:</p>
+            <ul>
+                <li>Query parser and AST construction</li>
+                <li>Execution planning and optimization</li>
+                <li>Parallel aggregation across time ranges</li>
+                <li>Result caching for common queries</li>
+            </ul>
+
+            <h3>Craft #5: Alerting & Notification System</h3>
+            <p>Build a PagerDuty-like alerting platform:</p>
+            <ul>
+                <li>Event-driven rule evaluation</li>
+                <li>Alert state machine (firing → acknowledged → resolved)</li>
+                <li>Multi-channel notifications (email, Slack, PagerDuty)</li>
+                <li>Escalation and routing policies</li>
+            </ul>
+
+            <h3>The Complete System</h3>
+            <p>Together, these crafts build a complete real-time monitoring system:</p>
+            <ul>
+                <li>Craft #1: Ingest metrics (2,253 RPS)</li>
+                <li>Craft #2: Buffer with message queue (~200 RPS)</li>
+                <li>Craft #3: Store in time-series DB (1M+ writes/sec target)</li>
+                <li>Craft #4: Query and aggregate (sub-second performance)</li>
+                <li>Craft #5: Alert on anomalies (<1 minute latency)</li>
+            </ul>
+        </div>
+
+        <!-- Mark Completion -->
+        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border-left: 4px solid #27ae60; padding: 30px; border-radius: 15px; margin-bottom: 40px;">
+            <h2 style="margin-bottom: 15px;">✅ Completed This Craft?</h2>
+            <p>Mark your progress and track it on your progress dashboard.</p>
+            <button onclick="markCraftComplete('craft2')" style="background: #27ae60; border: none; color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; margin-top: 15px; transition: all 0.3s ease;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'">
+                ✓ Mark Craft #2 as Complete
+            </button>
+            <p style="font-size: 0.9em; color: #555; margin-top: 15px;">
+                Syncs to your progress dashboard if you're signed in
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function showPhase(phaseId) {
+            // Hide all content panels
+            document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.phase-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected panel
+            document.getElementById(phaseId).classList.add('active');
+
+            // Highlight active tab (from clicked element)
+            if (event && event.target) {
+                let tabElement = event.target;
+                while (tabElement && !tabElement.classList.contains('phase-tab')) {
+                    tabElement = tabElement.parentElement;
+                }
+                if (tabElement) {
+                    tabElement.classList.add('active');
+                }
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- Firebase for Craft Completion -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Configuration (same as progress.html)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "systems-craft.firebaseapp.com",
+            projectId: "systems-craft",
+            storageBucket: "systems-craft.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let db = null;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (error) {
+            console.error("Firebase not configured - progress won't sync");
+        }
+
+        async function markCraftComplete(craftKey) {
+            // Save to localStorage (works offline)
+            const completedCrafts = JSON.parse(localStorage.getItem('completedCrafts') || '{}');
+            completedCrafts[craftKey] = {
+                completedAt: new Date().toISOString(),
+                markedComplete: true
+            };
+            localStorage.setItem('completedCrafts', JSON.stringify(completedCrafts));
+
+            // Try to sync to Firestore if user is logged in
+            if (db && firebase.auth().currentUser) {
+                try {
+                    const userId = firebase.auth().currentUser.uid;
+                    const docRef = db.collection('users').doc(userId);
+
+                    // Craft 2 has 3 phases
+                    await docRef.update({
+                        [`crafts.${craftKey}.completed`]: true,
+                        [`crafts.${craftKey}.phases`]: Array.from({length: 3}, (_, i) => i + 1),
+                        [`crafts.${craftKey}.completedAt`]: new Date()
+                    });
+
+                    console.log("✅ Progress saved to Firestore!");
+                    alert("🎉 Great job! Your progress has been saved to your dashboard.");
+                } catch (error) {
+                    console.error("Error saving to Firestore:", error);
+                    alert("✅ Marked as complete! (Sync with Firestore failed - see console)");
+                }
+            } else {
+                alert("✅ Marked as complete locally! Sign in to sync to your dashboard.");
+                console.log("To sync progress, visit: progress.html and sign in");
+            }
+        }
+    </script>
+</body>
+</html>

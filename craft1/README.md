@@ -15,6 +15,67 @@ Craft #1 teaches you how to build a high-performance HTTP server through **syste
 
 ---
 
+## 🚀 Getting Started: Phase-by-Phase Workflow
+
+Craft #1 is designed for **hands-on learning**. Each phase has:
+- **Starter branch** (`phase-X-starter`) - Starting code with TODOs for you to implement
+- **Solution branch** (`phase-X-solution`) - Reference implementation to compare against
+
+### Workflow for Each Phase:
+
+```bash
+# 1. Start from the phase starter branch
+git checkout phase-1-starter
+
+# 2. Read the phase documentation below to understand:
+#    - What bottleneck you're solving
+#    - What solution to implement
+#    - What performance improvement to expect
+
+# 3. Implement the solution (look for TODO comments in code)
+#    - Follow the phase instructions in this README
+#    - Write code to solve the identified bottleneck
+
+# 4. Build and test your implementation
+mkdir build && cd build
+cmake .. && make
+./metricstream_server 8080
+
+# 5. Run load tests to measure performance
+./load_test 8080 50 10    # 50 clients, 10 requests each
+
+# 6. Compare with the solution branch
+git diff phase-1-solution   # See what's different
+git checkout phase-1-solution  # (optional) Check reference implementation
+
+# 7. Move to next phase
+git checkout phase-2-starter  # Start Phase 2
+```
+
+### Available Phases:
+
+| Phase | Starter Branch | Solution Branch | Optimization |
+|-------|---------------|-----------------|--------------|
+| **0** | `phase-0-baseline` | - | Baseline (single-threaded) |
+| **1** | `phase-1-starter` | `phase-1-solution` | Threading per request |
+| **2** | `phase-2-starter` | `phase-2-solution` | Async I/O (producer-consumer) |
+| **3** | `phase-3-starter` | `phase-3-solution` | JSON parser optimization |
+| **4** | `phase-4-starter` | `phase-4-solution` | Hash-based mutex pool |
+| **5** | `phase-5-starter` | `phase-5-solution` | Lock-free ring buffer |
+| **6** | `phase-6-starter` | `phase-6-solution` | Thread pool architecture |
+| **7** | `phase-7-starter` | `phase-7-solution` | HTTP Keep-Alive |
+
+### Alternative: View Final Code
+
+If you just want to see the final optimized implementation without going through each phase:
+```bash
+git checkout main  # Main branch has Phase 7 complete (final state)
+```
+
+**Recommendation:** Work through phases sequentially! Each phase builds on the previous one, and the performance improvements teach you systematic optimization methodology.
+
+---
+
 ## Architecture Evolution
 
 ### Starting Point (Phase 1)

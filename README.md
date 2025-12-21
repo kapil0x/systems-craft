@@ -1,8 +1,28 @@
 # Systems Craft: Build a Complete Monitoring Platform
 
-**Learn distributed systems design by building production-grade infrastructure from scratch.** A hands-on tutorial series where you build a real monitoring platform (like Datadog, Prometheus, or New Relic) through progressive optimization—starting with a working proof-of-concept, then building each component production-grade.
+**Engineer production systems, not toy examples.** Systems Craft teaches you distributed systems architecture through building a real-world monitoring platform (like Datadog, Prometheus, or New Relic). You'll master core engineering concepts—concurrency, async I/O, message queuing, time-series storage, query optimization, and alerting—by shipping working code against real constraints.
+
+Why a complete monitoring platform? Because it forces you to learn everything: **ingestion performance (Craft #1), message queuing (Craft #2), storage engines (Craft #3), query optimization (Craft #4), and alerting systems (Craft #5)**. Each component teaches different distributed systems principles. Together, they teach you system design.
 
 > **The Future of Engineering:** Learn to design distributed systems AND coordinate AI agents to build them—practicing the exact skills you'll need when every engineer manages teams of AI.
+
+## 🚀 Fastest Way to Start (30 Seconds with Docker)
+
+**No C++ compiler needed. No dependencies. Just run:**
+
+```bash
+# Start the complete monitoring platform
+docker-compose up
+
+# Server running on http://localhost:8080
+# Open website/benchmark.html to test performance
+```
+
+That's it! You now have a working monitoring system. See [DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md) for details.
+
+**Next:** Open `website/architecture.html` to understand what you just ran, then start optimizing with Craft #1.
+
+---
 
 ## 🎯 Learning Path
 
@@ -14,17 +34,21 @@ Build a complete working monitoring platform in an afternoon:
 - **[→ Start with Phase 0 PoC](phase0/README.md)**
 
 ### **Then Optimize: Craft #1 (8-12 hours)** ✅
-Optimize metrics ingestion from 200 → 2,253 RPS:
+Optimize metrics ingestion from 200 → ~2k RPS:
 - HTTP server from raw sockets
 - Thread pool architecture
 - Lock-free ring buffers
 - Custom JSON parser (zero dependencies)
 - **[→ Build Craft #1: Metrics Ingestion](docs/CRAFT1.md)**
 
-### **Coming Soon: Crafts #2-5**
+### **Then Build: Craft #2 (6-8 hours)** 🚀
+Learn distributed message queues:
+
+- **[Craft #2: Distributed Message Queue](craft2/README.md)** - Build file-based queue, then integrate Kafka
+
+### **Coming Soon: Crafts #3-5**
 Build remaining components production-grade:
 
-- **[Craft #2: Distributed Message Queue](craft2/README.md)** - Kafka-like buffering system
 - **[Craft #3: Time-Series Storage Engine](craft3/README.md)** - InfluxDB-like database
 - **[Craft #4: Query & Aggregation Engine](craft4/README.md)** - PromQL-like query processor
 - **[Craft #5: Alerting & Notification System](craft5/README.md)** - PagerDuty-like alerting
@@ -113,10 +137,10 @@ Optimized through **8 phases**:
 - **Phase 4:** Per-client mutex pools → incremental improvement
 - **Phase 5:** Thread pool architecture → 100% success, 0.65ms latency
 - **Phase 6:** Lock-free ring buffers → eliminated overhead
-- **Phase 7:** HTTP Keep-Alive → **2,253 RPS, 0.25ms latency** ✅
+- **Phase 7:** HTTP Keep-Alive → **~2k RPS, 0.25ms latency** ✅
 - **Phase 8:** Event-driven I/O (epoll/kqueue) → 🚧 in progress
 
-**Current Performance (Phase 7):** 2,253 RPS sustained, 100% reliability, p50 = 0.25ms
+**Current Performance (Phase 7):** ~2k RPS sustained, 100% reliability, p50 = 0.25ms
 **Time:** 8-12 hours total across all phases
 
 ### 🚀 Craft #2: Distributed Message Queue (In Progress)
@@ -279,14 +303,23 @@ If you're an AI agent working on this codebase:
 | **Phase 4** | Hash-based per-client mutex | 95%+ success |
 | **Phase 5** | Thread pool architecture | 100% success, 0.65ms latency |
 | **Phase 6** | Lock-free ring buffer | Eliminated collection overhead |
-| **Phase 7** | HTTP Keep-Alive | **100% success, 0.25ms, 2,253 RPS** |
+| **Phase 7** | HTTP Keep-Alive | **100% success, 0.25ms, ~2k RPS** |
 
-## 🛠️ Requirements
+## 📋 Prerequisites
 
+**Programming Experience:** You don't need C++ experience! Systems Craft teaches C++ fundamentals as you build. If you have programming experience in **Python, Go, Rust, Java, or JavaScript**, you'll learn quickly. Core concepts (concurrency, async I/O, data structures) transfer across languages.
+
+**System Requirements:**
 - C++17 or later
 - CMake 3.16+
 - Linux or macOS
-- Basic understanding of concurrent programming
+- ~2-3 hours for Craft #0 (complete PoC)
+- ~8-12 hours per craft for optimization/building
+
+**What You Should Know:**
+- Basic programming concepts (loops, functions, data structures)
+- Command line / terminal basics
+- Understanding of HTTP and basic networking helps but isn't required
 
 ## 📝 License
 

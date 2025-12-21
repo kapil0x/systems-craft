@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Benchmark - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            display: none;
+        }
+
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 30px;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .metric {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .status-error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .status-info {
+            background: #d6eaf8;
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .metrics-table th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .metrics-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .metrics-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .save-metrics-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            margin-top: 20px;
+        }
+
+        .save-metrics-btn:hover {
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Systems Craft</a>
+
+        <header>
+            <h1>⚡ Performance Benchmark Tool</h1>
+            <p>Measure throughput and latency of your local Systems Craft server</p>
+        </header>
+
+        <div class="card">
+            <h2>🚀 Benchmark Configuration</h2>
+
+            <div class="form-group">
+                <label for="serverUrl">Server URL</label>
+                <input type="text" id="serverUrl" placeholder="http://localhost:8080" value="http://localhost:8080">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="numClients">Number of Concurrent Clients</label>
+                    <select id="numClients">
+                        <option value="5">5 clients</option>
+                        <option value="10" selected>10 clients</option>
+                        <option value="20">20 clients</option>
+                        <option value="50">50 clients</option>
+                        <option value="100">100 clients</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="requestsPerClient">Requests per Client</label>
+                    <select id="requestsPerClient">
+                        <option value="5">5 requests</option>
+                        <option value="10" selected>10 requests</option>
+                        <option value="20">20 requests</option>
+                        <option value="50">50 requests</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="startBenchmark()" id="startBtn">Start Benchmark</button>
+        </div>
+
+        <div class="card">
+            <div class="progress-section" id="progressSection">
+                <h2>📊 Benchmark Running</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <p id="progressText">Initializing...</p>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <div class="status-message" id="statusMessage"></div>
+
+                <div class="metrics-grid" id="metricsGrid"></div>
+
+                <table class="metrics-table" id="metricsTable">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metricsBody"></tbody>
+                </table>
+
+                <button class="save-metrics-btn" onclick="saveMetrics()">💾 Save Metrics to Progress</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "systems-craft.firebaseapp.com",
+            projectId: "systems-craft",
+            storageBucket: "systems-craft.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let db = null;
+        let benchmarkResults = null;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (error) {
+            console.error("Firebase not configured");
+        }
+
+        async function startBenchmark() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const numClients = parseInt(document.getElementById('numClients').value);
+            const requestsPerClient = parseInt(document.getElementById('requestsPerClient').value);
+
+            if (!serverUrl) {
+                alert('Please enter a server URL');
+                return;
+            }
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultsSection').classList.remove('visible');
+
+            try {
+                benchmarkResults = await runBenchmark(serverUrl, numClients, requestsPerClient);
+                displayResults(benchmarkResults);
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+                console.error(error);
+            } finally {
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('progressSection').style.display = 'none';
+            }
+        }
+
+        async function runBenchmark(serverUrl, numClients, requestsPerClient) {
+            showStatus('Initializing ' + numClients + ' clients...', 'info');
+            const startTime = Date.now();
+            let successCount = 0;
+            let totalLatency = 0;
+            const latencies = [];
+
+            const metricsEndpoint = serverUrl + '/metrics';
+            const requests = [];
+
+            // Create requests from each client
+            for (let clientId = 0; clientId < numClients; clientId++) {
+                for (let reqId = 0; reqId < requestsPerClient; reqId++) {
+                    requests.push({
+                        clientId,
+                        reqId,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+
+            // Execute requests
+            const totalRequests = requests.length;
+            let completed = 0;
+
+            for (const req of requests) {
+                try {
+                    const reqStartTime = Date.now();
+                    const response = await fetch(metricsEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            timestamp: req.timestamp,
+                            name: 'benchmark_metric',
+                            value: Math.random() * 100,
+                            client_id: 'bench_' + req.clientId
+                        })
+                    });
+
+                    const latency = Date.now() - reqStartTime;
+                    latencies.push(latency);
+                    totalLatency += latency;
+
+                    if (response.ok) {
+                        successCount++;
+                    }
+                } catch (error) {
+                    console.error('Request failed:', error);
+                }
+
+                completed++;
+                const progress = (completed / totalRequests) * 100;
+                updateProgress(progress, completed, totalRequests);
+            }
+
+            const totalTime = (Date.now() - startTime) / 1000;
+            const rps = totalRequests / totalTime;
+
+            // Calculate latency percentiles
+            latencies.sort((a, b) => a - b);
+            const p50 = latencies[Math.floor(latencies.length * 0.5)];
+            const p95 = latencies[Math.floor(latencies.length * 0.95)];
+            const p99 = latencies[Math.floor(latencies.length * 0.99)];
+            const avgLatency = totalLatency / totalRequests;
+
+            return {
+                totalRequests,
+                successCount,
+                successRate: (successCount / totalRequests) * 100,
+                rps: rps.toFixed(2),
+                totalTime: totalTime.toFixed(2),
+                avgLatency: avgLatency.toFixed(2),
+                p50Latency: p50,
+                p95Latency: p95,
+                p99Latency: p99,
+                minLatency: Math.min(...latencies),
+                maxLatency: Math.max(...latencies)
+            };
+        }
+
+        function updateProgress(percent, completed, total) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = percent.toFixed(0) + '%';
+            document.getElementById('progressText').textContent =
+                `Sent ${completed}/${total} requests...`;
+        }
+
+        function displayResults(results) {
+            const status = results.successRate >= 95 ? 'success' : 'info';
+            showStatus(
+                `✅ Benchmark Complete! ${results.successCount}/${results.totalRequests} successful (${results.successRate.toFixed(1)}%)`,
+                status
+            );
+
+            // Display metrics grid
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = `
+                <div class="metric">
+                    <div class="metric-label">Throughput</div>
+                    <div class="metric-value">${results.rps}</div>
+                    <div class="metric-label">RPS</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Avg Latency</div>
+                    <div class="metric-value">${results.avgLatency}</div>
+                    <div class="metric-label">ms</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Success Rate</div>
+                    <div class="metric-value">${results.successRate.toFixed(1)}</div>
+                    <div class="metric-label">%</div>
+                </div>
+            `;
+
+            // Display metrics table
+            const metricsBody = document.getElementById('metricsBody');
+            metricsBody.innerHTML = `
+                <tr>
+                    <td>Total Requests</td>
+                    <td>${results.totalRequests}</td>
+                </tr>
+                <tr>
+                    <td>Successful</td>
+                    <td>${results.successCount}</td>
+                </tr>
+                <tr>
+                    <td>Success Rate</td>
+                    <td>${results.successRate.toFixed(2)}%</td>
+                </tr>
+                <tr>
+                    <td>Throughput</td>
+                    <td>${results.rps} RPS</td>
+                </tr>
+                <tr>
+                    <td>Total Time</td>
+                    <td>${results.totalTime}s</td>
+                </tr>
+                <tr>
+                    <td>Min Latency</td>
+                    <td>${results.minLatency}ms</td>
+                </tr>
+                <tr>
+                    <td>Avg Latency</td>
+                    <td>${results.avgLatency}ms</td>
+                </tr>
+                <tr>
+                    <td>P50 Latency</td>
+                    <td>${results.p50Latency}ms</td>
+                </tr>
+                <tr>
+                    <td>P95 Latency</td>
+                    <td>${results.p95Latency}ms</td>
+                </tr>
+                <tr>
+                    <td>P99 Latency</td>
+                    <td>${results.p99Latency}ms</td>
+                </tr>
+                <tr>
+                    <td>Max Latency</td>
+                    <td>${results.maxLatency}ms</td>
+                </tr>
+            `;
+
+            document.getElementById('resultsSection').classList.add('visible');
+        }
+
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = 'status-message status-' + type;
+        }
+
+        function saveMetrics() {
+            if (!benchmarkResults) {
+                alert('No metrics to save');
+                return;
+            }
+
+            // Save to localStorage
+            const metrics = {
+                rps: benchmarkResults.rps,
+                avgLatency: benchmarkResults.avgLatency,
+                successRate: benchmarkResults.successRate,
+                timestamp: new Date().toISOString()
+            };
+
+            const savedMetrics = JSON.parse(localStorage.getItem('benchmarkMetrics') || '[]');
+            savedMetrics.push(metrics);
+            localStorage.setItem('benchmarkMetrics', JSON.stringify(savedMetrics));
+
+            // Try to sync to Firestore
+            if (db && firebase.auth().currentUser) {
+                try {
+                    const userId = firebase.auth().currentUser.uid;
+                    const docRef = db.collection('users').doc(userId);
+
+                    docRef.update({
+                        bestPerformance: benchmarkResults.rps,
+                        lastBenchmark: {
+                            rps: benchmarkResults.rps,
+                            avgLatency: benchmarkResults.avgLatency,
+                            successRate: benchmarkResults.successRate,
+                            timestamp: new Date()
+                        }
+                    });
+
+                    alert('✅ Metrics saved to your progress dashboard!');
+                } catch (error) {
+                    alert('⚠️ Metrics saved locally (Firestore sync failed)');
+                }
+            } else {
+                alert('✅ Metrics saved locally! Sign in to sync to your progress dashboard.');
+            }
+        }
+    </script>
+</body>
+</html>

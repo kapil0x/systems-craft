@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress - Systems Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-email {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .craft-progress {
+            margin-bottom: 30px;
+        }
+
+        .craft-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .craft-status {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.partial {
+            background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .progress-fill.planned {
+            background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .achievements {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .achievement {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff3cd 0%, #fcf8e3 100%);
+            border-radius: 10px;
+            border: 2px solid #f39c12;
+        }
+
+        .achievement-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #7d6608;
+        }
+
+        .leaderboard {
+            margin-top: 40px;
+        }
+
+        .leaderboard h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .leaderboard-table th {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .leaderboard-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #555;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .leaderboard-table tr.you {
+            background: linear-gradient(135deg, #d5f4e6 0%, #e8f5e9 100%);
+            font-weight: 600;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .rank.gold {
+            color: #f39c12;
+        }
+
+        .rank.silver {
+            color: #95a5a6;
+        }
+
+        .rank.bronze {
+            color: #cd7f32;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-info {
+                text-align: center;
+                margin-top: 15px;
+            }
+
+            .achievements {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen (shown when not authenticated) -->
+        <div id="loginScreen" style="display: none; text-align: center; padding: 60px 20px;">
+            <div class="card" style="max-width: 400px; margin: 0 auto;">
+                <h2 style="margin-bottom: 10px;">📊 Sign In to Your Progress</h2>
+                <p style="color: #7f8c8d; margin-bottom: 30px;">Track your Systems Craft learning journey</p>
+
+                <button onclick="signInWithGoogle()" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
+                    🔐 Sign In with Google
+                </button>
+
+                <button onclick="signInWithGitHub()" class="btn btn-secondary" style="width: 100%; margin-bottom: 20px;">
+                    🐙 Sign In with GitHub
+                </button>
+
+                <p style="font-size: 0.85em; color: #95a5a6;">
+                    Your progress data is securely stored in Firebase<br>
+                    <a href="FIREBASE_SETUP.md" style="color: #3498db; text-decoration: none;">Need help setting up Firebase?</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Dashboard (shown when authenticated) -->
+        <div id="dashboardScreen" style="display: none;">
+            <a href="index.html" class="back-link">← Back to Systems Craft</a>
+
+            <header>
+                <div>
+                    <h1>📊 My Progress</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-email" id="userEmail">Loading...</div>
+                    <button class="logout-btn" onclick="logoutUser()">Sign Out</button>
+                </div>
+            </header>
+
+        <div class="dashboard">
+            <!-- Crafts Progress -->
+            <div class="card">
+                <h2>🚀 Learning Journey</h2>
+                
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #0: Complete PoC</span>
+                        <span class="craft-status" id="craft0-status">Not Started</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="craft0-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #1: Metrics Ingestion</span>
+                        <span class="craft-status" id="craft1-status">Not Started</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="craft1-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #2: Message Queue</span>
+                        <span class="craft-status" id="craft2-status">Not Started</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="craft2-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #3: Storage Engine</span>
+                        <span class="craft-status" id="craft3-status">Coming Soon</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill planned" id="craft3-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #4: Query Engine</span>
+                        <span class="craft-status" id="craft4-status">Coming Soon</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill planned" id="craft4-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="craft-progress">
+                    <div class="craft-name">
+                        <span>Craft #5: Alerting System</span>
+                        <span class="craft-status" id="craft5-status">Coming Soon</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill planned" id="craft5-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="craft0.html" class="btn btn-primary">Continue Craft #0</a>
+                    <a href="craft1.html" class="btn btn-secondary">Continue Craft #1</a>
+                </div>
+            </div>
+
+            <!-- Statistics & Achievements -->
+            <div class="card">
+                <h2>🏆 Your Stats</h2>
+
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">Total Time Spent</div>
+                        <div class="stat-value" id="totalTime">0h</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Crafts Completed</div>
+                        <div class="stat-value" id="craftsCompleted">0/6</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Best Performance</div>
+                        <div class="stat-value" id="bestPerformance">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Current Rank</div>
+                        <div class="stat-value" id="currentRank">#—</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 25px; margin-bottom: 15px; color: #2c3e50;">Achievements</h3>
+                <div class="achievements">
+                    <div class="achievement">
+                        <div class="achievement-icon">🎓</div>
+                        <div class="achievement-name">PoC Builder</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">⚡</div>
+                        <div class="achievement-name">Optimization Pro</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">📤</div>
+                        <div class="achievement-name">Queue Master</div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d;">
+                    Earn achievements by completing crafts and submitting code!
+                </p>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="card leaderboard">
+            <h2>🥇 Leaderboard (Top Performers)</h2>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Crafts Completed</th>
+                        <th>Best RPS</th>
+                        <th>Time to Completion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rank gold">🥇 1</td>
+                        <td>Alex Chen</td>
+                        <td>✅ 2/6</td>
+                        <td>~2k RPS</td>
+                        <td>32 hours</td>
+                    </tr>
+                    <tr>
+                        <td class="rank silver">🥈 2</td>
+                        <td>Jordan Williams</td>
+                        <td>✅ 1/6</td>
+                        <td>~1.8k RPS</td>
+                        <td>28 hours</td>
+                    </tr>
+                    <tr>
+                        <td class="rank bronze">🥉 3</td>
+                        <td>Sam Patel</td>
+                        <td>✅ 1/6</td>
+                        <td>~1.5k RPS</td>
+                        <td>35 hours</td>
+                    </tr>
+                    <tr class="you">
+                        <td class="rank">📍 —</td>
+                        <td>You (Not Yet Ranked)</td>
+                        <td>0/6</td>
+                        <td>—</td>
+                        <td>Start learning!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 15px; color: #2c3e50;">Ready to start building?</h3>
+            <a href="craft0.html" class="btn btn-primary" style="margin-right: 15px;">Start Craft #0</a>
+            <a href="index.html" class="btn btn-secondary">Back to Home</a>
+        </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // ========================================
+        // Firebase Configuration & Initialization
+        // ========================================
+        // IMPORTANT: Update these values with your actual Firebase credentials
+        // See FIREBASE_SETUP.md for step-by-step instructions
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",           // From Firebase Console
+            authDomain: "systems-craft.firebaseapp.com",  // Replace with your project ID
+            projectId: "systems-craft",       // From Firebase Console
+            storageBucket: "systems-craft.appspot.com",   // Replace with your project ID
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // From Firebase Console
+            appId: "YOUR_APP_ID"              // From Firebase Console
+        };
+
+        let auth, db;
+        let firebaseInitialized = false;
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            firebaseInitialized = true;
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            console.error("Please follow the Firebase setup instructions in FIREBASE_SETUP.md");
+            document.getElementById('loginScreen').innerHTML = `
+                <div class="card" style="max-width: 500px; margin: 0 auto; border: 2px solid #e74c3c;">
+                    <h2 style="color: #e74c3c; margin-bottom: 10px;">⚠️ Firebase Not Configured</h2>
+                    <p style="color: #c0392b; margin-bottom: 20px;">
+                        The progress tracking system requires Firebase configuration to work.
+                    </p>
+                    <p style="margin-bottom: 20px; text-align: left; background: #fdeef0; padding: 15px; border-radius: 8px;">
+                        <strong>Steps to fix:</strong><br>
+                        1. Open <code>website/progress.html</code><br>
+                        2. Find the <code>firebaseConfig</code> object (around line 545)<br>
+                        3. Replace the placeholder values with your actual Firebase credentials<br>
+                        4. See <a href="FIREBASE_SETUP.md" style="color: #3498db;">FIREBASE_SETUP.md</a> for detailed instructions
+                    </p>
+                    <a href="FIREBASE_SETUP.md" class="btn btn-primary" style="display: inline-block;">Go to Setup Guide</a>
+                </div>
+            `;
+            document.getElementById('loginScreen').style.display = 'block';
+        }
+
+        // ========================================
+        // Authentication Handlers
+        // ========================================
+
+        function signInWithGoogle() {
+            if (!firebaseInitialized) {
+                alert("Firebase is not configured. Please see FIREBASE_SETUP.md");
+                return;
+            }
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("Google sign-in error:", error);
+                alert("Sign-in failed: " + error.message);
+            });
+        }
+
+        function signInWithGitHub() {
+            if (!firebaseInitialized) {
+                alert("Firebase is not configured. Please see FIREBASE_SETUP.md");
+                return;
+            }
+            const provider = new firebase.auth.GithubAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("GitHub sign-in error:", error);
+                alert("Sign-in failed: " + error.message);
+            });
+        }
+
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+
+        // ========================================
+        // Monitor Authentication State
+        // ========================================
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log("✅ User logged in:", user.email);
+
+                // Show dashboard, hide login screen
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboardScreen').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+
+                // Load user progress from Firestore
+                try {
+                    const docRef = db.collection('users').doc(user.uid);
+                    const docSnap = await docRef.get();
+
+                    if (docSnap.exists) {
+                        console.log("📊 User progress loaded from Firestore");
+                        const data = docSnap.data();
+                        loadProgress(data);
+                    } else {
+                        console.log("🆕 Creating new user profile");
+                        // Create new user document on first login
+                        await docRef.set({
+                            email: user.email,
+                            crafts: {
+                                craft0: { completed: false, phases: [] },
+                                craft1: { completed: false, phases: [] },
+                                craft2: { completed: false, phases: [] },
+                                craft3: { completed: false, phases: [] },
+                                craft4: { completed: false, phases: [] },
+                                craft5: { completed: false, phases: [] }
+                            },
+                            totalTime: 0,
+                            bestPerformance: 0,
+                            currentRank: 0,
+                            createdAt: new Date()
+                        });
+                        console.log("✅ New user profile created");
+                        loadProgress({
+                            crafts: {
+                                craft0: { completed: false, phases: [] },
+                                craft1: { completed: false, phases: [] },
+                                craft2: { completed: false, phases: [] },
+                                craft3: { completed: false, phases: [] },
+                                craft4: { completed: false, phases: [] },
+                                craft5: { completed: false, phases: [] }
+                            }
+                        });
+                    }
+
+                    // Load leaderboard after user data is loaded
+                    loadLeaderboard();
+                } catch (error) {
+                    console.error("Error loading/creating user progress:", error);
+                    alert("Error loading progress: " + error.message);
+                }
+            } else {
+                // Not logged in, show login screen
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('dashboardScreen').style.display = 'none';
+            }
+        });
+
+        // ========================================
+        // Progress Loading & Saving
+        // ========================================
+
+        function loadProgress(data) {
+            console.log("📈 Updating progress bars from data...");
+
+            if (data.crafts) {
+                // Calculate and display progress for each craft
+                Object.keys(data.crafts).forEach((craftKey, index) => {
+                    const craft = data.crafts[craftKey];
+
+                    // Count completed phases
+                    const completed = craft.phases ? craft.phases.length : 0;
+                    const total = index === 0 ? 1 : 8; // Craft 0 has 1 phase, others have 8
+                    const percentage = (completed / total) * 100;
+
+                    // Update UI elements
+                    const fillElement = document.getElementById(craftKey + '-fill');
+                    const statusElement = document.getElementById(craftKey + '-status');
+
+                    if (fillElement && statusElement) {
+                        // Animate progress bar
+                        fillElement.style.transition = 'width 0.5s ease';
+                        fillElement.style.width = percentage + '%';
+
+                        // Color code based on status
+                        if (craft.completed) {
+                            fillElement.style.background = 'linear-gradient(90deg, #27ae60 0%, #229954 100%)';
+                            statusElement.textContent = '✅ Complete';
+                            statusElement.style.color = '#27ae60';
+                        } else if (percentage > 0) {
+                            fillElement.style.background = 'linear-gradient(90deg, #f39c12 0%, #e67e22 100%)';
+                            statusElement.textContent = percentage.toFixed(0) + '% Complete';
+                            statusElement.style.color = '#f39c12';
+                        } else {
+                            statusElement.textContent = '⏳ Not Started';
+                            statusElement.style.color = '#95a5a6';
+                        }
+                    }
+                });
+            }
+        }
+
+        // Save progress to Firestore when a craft phase is completed
+        // This function will be called from craft pages when they detect phase completion
+        async function saveProgress(craftKey, phasesCompleted, totalPhases) {
+            if (!auth.currentUser) {
+                console.error("No user logged in");
+                return;
+            }
+
+            try {
+                const docRef = db.collection('users').doc(auth.currentUser.uid);
+                const percentage = (phasesCompleted / totalPhases) * 100;
+                const completed = percentage === 100;
+
+                await docRef.update({
+                    [`crafts.${craftKey}.phases`]: Array.from({length: phasesCompleted}, (_, i) => i + 1),
+                    [`crafts.${craftKey}.completed`]: completed,
+                    [`crafts.${craftKey}.updatedAt`]: new Date()
+                });
+
+                console.log("✅ Progress saved:", craftKey, `${phasesCompleted}/${totalPhases}`);
+
+                // Reload progress display
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    loadProgress(docSnap.data());
+                }
+            } catch (error) {
+                console.error("Error saving progress:", error);
+            }
+        }
+
+        // Load leaderboard data from Firestore
+        async function loadLeaderboard() {
+            if (!db) return;
+
+            try {
+                // Get all users sorted by bestPerformance
+                const snapshot = await db.collection('users')
+                    .orderBy('bestPerformance', 'desc')
+                    .limit(10)
+                    .get();
+
+                const tbody = document.querySelector('.leaderboard-table tbody');
+                if (!tbody) return;
+
+                let html = '';
+                snapshot.forEach((doc, index) => {
+                    const user = doc.data();
+                    const rank = index + 1;
+                    const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '📍';
+                    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+
+                    // Count completed crafts
+                    let completedCount = 0;
+                    if (user.crafts) {
+                        Object.values(user.crafts).forEach(craft => {
+                            if (craft.completed) completedCount++;
+                        });
+                    }
+
+                    const rps = user.bestPerformance ? user.bestPerformance + ' RPS' : '—';
+                    const isCurrentUser = auth.currentUser && auth.currentUser.uid === doc.id ? ' you' : '';
+
+                    html += `
+                        <tr class="${isCurrentUser}">
+                            <td class="rank ${rankClass}">${rankEmoji} ${rank}</td>
+                            <td>${user.email || 'Anonymous'}</td>
+                            <td>✅ ${completedCount}/6</td>
+                            <td>${rps}</td>
+                            <td>${user.createdAt ? 'In Progress' : '—'}</td>
+                        </tr>
+                    `;
+                });
+
+                if (snapshot.empty) {
+                    html = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #95a5a6;">No results yet. Be the first!</td></tr>';
+                }
+
+                tbody.innerHTML = html;
+                console.log("✅ Leaderboard loaded:", snapshot.size, "users");
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+                console.log("Tip: Make sure Firestore is configured and security rules allow public reads");
+            }
+        }
+
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
+</body>
+</html>
