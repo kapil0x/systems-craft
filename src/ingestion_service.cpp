@@ -306,8 +306,13 @@ HttpResponse IngestionService::handle_metrics_post(const HttpRequest& request) {
         metrics_received_ += batch.size();
         batches_processed_++;
         
-        // Queue metrics for asynchronous writing to queue
-        queue_metrics_for_async_write(batch, client_id);
+        // For Kafka mode, write synchronously to avoid async thread issues
+        // For file mode, use async writer for better throughput
+        if (queue_mode_ == QueueMode::KAFKA) {
+            store_metrics_to_queue(batch, client_id);
+        } else {
+            queue_metrics_for_async_write(batch, client_id);
+        }
         
         response.body = create_success_response(batch.size());
         
